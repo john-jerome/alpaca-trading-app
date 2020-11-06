@@ -11,7 +11,7 @@ api_key = "e33d9b7419949ca3cf1665591c918e48bd0f7523"
 headers = {
     'Authorization': 'Token ' + str(api_key)}
 
-database = r"pythonsqlite.db"
+database = r"alpaca.db"
 conn = create_connection(database)
 
 for i in range(0,41):
