@@ -21,7 +21,7 @@ response_list = response.json()
 for item in response_list:
     companies.append(item['symbol'])
 
-database = r"pythonsqlite.db"
+database = r"alpaca.db"
 conn = create_connection(database)
 
 for company in set(companies):
