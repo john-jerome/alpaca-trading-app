@@ -1,1 +1,1 @@
-# trading-app
+# alpaca-trading-app
