@@ -11,11 +11,11 @@ from algorithms import verify_orders, buy_strategy_moving_average, sell_strategy
 from database import create_connection, close_connection
 
 config = configparser.ConfigParser()
-config.read('config.ini')
+config.read('config.ini') 
 db = config['sqlite']['database']
 
-class Strategy(object):
-    def __init__(self, strategy_buy, strategy_sell, period_buy = 45, period_sell = 45, period_verify = 30):
+class TradingBot(object):
+    def __init__(self, strategy_buy, strategy_sell, period_buy = 45, period_sell = 45, period_verify = 30, *args, **kwargs):
         self.__stop_receiving_data = threading.Event()
         self.__stop_verifying_orders = threading.Event()
         self.__stop_buying = threading.Event()
@@ -25,8 +25,8 @@ class Strategy(object):
         self.period_verify = period_verify # seconds
         self.period_buy = period_buy # seconds
         self.period_sell = period_sell # seconds
-        self.window_length = None
-        self.lookback_length = None
+        self.window_length = kwargs.get('window_length', None)
+        self.lookback_length = kwargs.get('lookback_length', None)
 
     def __start_receiving_data(self):
         receive_data_thread = threading.Thread(target = receive_data, args=(self.__stop_receiving_data, ))

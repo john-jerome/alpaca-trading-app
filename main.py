@@ -6,19 +6,15 @@ sys.path.insert(0,'modules')
 from tg_notifications import send_state
 from helpers import prices_cleanup
 from database import create_connection
-from strategy import Strategy
-
-config = configparser.ConfigParser()
-config.read('config.ini')
-
-db = config['sqlite']['database']
-
-program_state = 'Shutdown'
+from tradingBot import TradingBot
 
 def main():
 
-  global program_state
+  program_state = 'Shutdown'
   print("Starting the program...")
+  config = configparser.ConfigParser()
+  config.read('config.ini')
+  db = config['sqlite']['database']
   program_state = 'Init'
   
   period_buy = config.getint('thread_params', 'period_buy') # in seconds
