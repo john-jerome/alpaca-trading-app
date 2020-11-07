@@ -13,40 +13,6 @@ from database import select_data, generate_ts
 config = configparser.ConfigParser()
 config.read('config.ini')
 
-current_ts = generate_ts()
-
-ts_check = config.getboolean('internal_params', 'ts_check')
-ts_delay = int(config['internal_params']['ts_delay'])
-
-market_open_time = datetime.time(9, 0)
-market_close_time = datetime.time(17, 30)
-otc_open_time = datetime.time(7, 30)
-otc_close_time = datetime.time(23, 00)
-
-def is_standard_hours():
-    """ True if market is open during standard trading hours, 
-        False otherwise
-    """
-
-    if current_ts.weekday() <= 4 and \
-        current_ts.time() >= market_open_time and \
-        current_ts.time() <= market_close_time:
-        return True
-    else:
-        return False
-
-def is_otc_hours():
-    """ True if market is open during OTC trading hours, 
-        False otherwise
-    """
-
-    if current_ts.time() >= otc_open_time and current_ts.time() <= market_open_time: 
-        return True
-    elif current_ts.time() >= market_close_time and current_ts.time() <= otc_close_time:
-        return True
-    else:
-        return False
-
 def get_last_N_prices(db_conn, isin, N):
     """Create a df containing last N prices for a specific isin.
 

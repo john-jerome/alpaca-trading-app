@@ -21,12 +21,11 @@ def main():
                 'buy_amount'    : config.getint('algo_params', 'buy_amount'), 
                 'window_len'    : config.getint('algo_params', 'window_length'), 
                 'lookback_len'  : config.getint('algo_params', 'lookback_length'), 
-                'buy_threshold' : config.getfloat('algo_params', 'buy_threshold')}
+                'buy_threshold' : config.getfloat('algo_params', 'buy_threshold'),
+                'stop_loss'    : config.getfloat('algo_params', 'stop_loss_threshold'),
+                'profit_margin': config.getfloat('algo_params', 'profit_margin')}
 
-  strategy_sell = {'algorithm'     : 'limit', 
-                    'period'       : config.getint('thread_params', 'period_sell'), 
-                    'stop_loss'    : config.getfloat('algo_params', 'stop_loss_threshold'), 
-                    'profit_margin': config.getfloat('algo_params', 'profit_margin')}
+  strategy_sell = {'algorithm': 'no_algo'}
   try:
     # Create threads: receive and write to database; buy stocks; sell stocks; verify open orders
     trading_bot = TradingBot(strategy_buy, strategy_sell)

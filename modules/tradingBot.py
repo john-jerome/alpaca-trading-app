@@ -37,14 +37,8 @@ class TradingBot(object):
         with db_conn:
             while not self.__stop_buying.is_set():
                 if self.strategy_buy['algorithm'] == 'moving_average':
-                    assert ('window_length' in self.strategy_buy), "Window length is required"
-                    assert ('lookback_length' in self.strategy_buy), "Lookback length is required"
-                    assert ('buy_threshold' in self.strategy_buy), "Buy threshold is required"
                     buy_strategy_moving_average(db_conn, self.strategy_buy['buy_amount'], self.strategy_buy['window_len'], self.strategy_buy['lookback_len'], self.strategy_buy['buy_threshold'])
                 elif self.strategy_buy['algorithm'] == 'first_momentum':
-                    assert ('window_length' in self.strategy_buy), "Window length is required"
-                    assert ('lookback_length' in self.strategy_buy), "Lookback length is required"
-                    assert ('buy_threshold' in self.strategy_buy), "Buy threshold is required"
                     buy_strategy_first_momentum(db_conn, self.strategy_buy['buy_amount'], self.strategy_buy['window_len'], self.strategy_buy['lookback_len'], self.strategy_buy['buy_threshold'])
                 else:
                     print("The specified buy algorithm does not exist")
@@ -60,9 +54,7 @@ class TradingBot(object):
         with db_conn:
             while not self.__stop_selling.is_set():
                 if self.strategy_sell['algorithm'] == 'limit':
-                    assert ('stop_loss' in self.strategy_sell), "Stop loss threshold is required"
-                    assert ('profit_margin' in self.strategy_sell), "Profit margin is required"
-                    sell_strategy_limit(db_conn, self.strategy_sell['stop_loss'], self.strategy_sell['profit_margin'])
+                    pass
                 else:
                     print("The specified sell algorithm does not exist")
                     self.stop()
@@ -74,7 +66,8 @@ class TradingBot(object):
 
     def start(self):
         buy_thread = threading.Thread(target = self.__start_buying)
-        sell_thread = threading.Thread(target = self.__start_selling)
+        if 'algorithm' in self.strategy_sell and self.strategy_sell['algorithm'] != 'no_algo':
+            sell_thread = threading.Thread(target = self.__start_selling)
         
         self.__start_receiving_data()
         self.__start_verifying_orders()
