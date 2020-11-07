@@ -19,14 +19,15 @@ def main():
   period_buy = config.getint('thread_params', 'period_buy') # in seconds
   period_sell = config.getint('thread_params', 'period_sell') # in seconds
   period_verify = config.getint('thread_params', 'period_verify') # in seconds
-  window_length = config.getint('algo_params', 'window_length')
-  lookback_length = config.getint('algo_params', 'lookback_length')
+  window_len = config.getint('algo_params', 'window_length')
+  lookback_len = config.getint('algo_params', 'lookback_length')
   stop_loss = config.getfloat('algo_params', 'stop_loss_threshold')
   profit_margin = config.getfloat('algo_params', 'profit_margin')
   buy_amount = config.getint('algo_params', 'buy_amount')
+  buy_threshold = config.getfloat('algo_params', 'buy_threshold')
 
   try:
-    strategy_buy = {'algorithm':'moving_average', 'period': period_buy, 'buy_amount': buy_amount, 'window_length': window_length, 'lookback_length': lookback_length}
+    strategy_buy = {'algorithm':'moving_average', 'period': period_buy, 'buy_amount': buy_amount, 'window_len': window_len, 'lookback_len': lookback_len, 'buy_threshold': buy_threshold}
     strategy_sell = {'algorithm':'limit', 'period': period_sell, 'stop_loss': stop_loss, 'profit_margin': profit_margin}
     # Create threads: receive and write to database; buy stocks; sell stocks; verify open orders
     trading_algo = TradingBot(strategy_buy, strategy_sell)
