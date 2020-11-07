@@ -52,7 +52,6 @@ def verify_orders(stop_event, period):
     close_connection(db_conn)
     print("Stop verifying orders...")
     return None
-        df_open_sell (pandas df): df with open sell orders for this instrument
 
 def sell_strategy_limit(db_conn, stop_loss_threshold, profit_margin):
     """Open a sell order in none already exists.
