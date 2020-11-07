@@ -1,4 +1,3 @@
-import datetime
 import time
 import pandas as pd
 import configparser
@@ -8,10 +7,10 @@ import numpy as np
 
 sys.path.insert(0,'modules')
 
-from database import create_connection, select_data, generate_ts, ts_to_unix, insert_one_row, close_connection
-from orders import verify_order_execution, create_order, get_current_portfolio, delete_order
-from helpers import is_standard_hours, is_otc_hours, get_last_N_prices, get_all_isin
-from portfolio import is_in_potfolio, is_open_buy_order, is_open_sell_order
+from database import generate_ts, ts_to_unix, insert_one_row
+from orders import create_order
+from helpers import get_last_N_prices, get_all_isin
+from portfolio import is_in_potfolio, is_open_buy_order
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -20,78 +19,20 @@ db = config['sqlite']['database']
 # collecting data for analysis
 isin_for_analysis = ['US58933Y1055', 'US00287Y1091']
 
-def verify_orders(stop_event, period):
+def verify_orders():
     """Thread to verify execution of open buy/sell orders
 
     Args:
-        stop_event (thread.Event): stop event for the thread
-        period (int): periodicity of the thread, seconds
 
     Returns:
         None
     """
 
-    db_conn = create_connection(db)
+    while not stop_event.is_set(): 
 
-    with db_conn:
-        while not stop_event.is_set(): 
-            sql_select_open_sell = """SELECT uuid FROM open_sell_orders"""
-            df_sell = select_data(db_conn, sql_select_open_sell)
-            df_sell = [''.join(i) for i in df_sell]
-            for order_uuid in df_sell:
-                verify_order_execution(db_conn, order_uuid)
+        time.sleep(period)
 
-            sql_select_open_buy = """SELECT uuid FROM open_buy_orders"""
-            df_buy = select_data(db_conn, sql_select_open_buy)
-            df_buy = [''.join(i) for i in df_buy]
-            for order_uuid in df_buy:
-                verify_order_execution(db_conn, order_uuid)
-
-            time.sleep(period)
-
-    close_connection(db_conn)
     print("Stop verifying orders...")
-    return None
-
-def sell_strategy_limit(db_conn, stop_loss_threshold, profit_margin):
-    """Open a sell order in none already exists.
-    If exists and the current price is too low, manually 'convert' it to a market order.
-
-    Args:
-        db_conn (sqlite3.connect): database connection object
-
-    Returns:
-        None
-    """
-
-    df_portfolio = get_current_portfolio()
-
-    for _, row in df_portfolio.iterrows():
-
-        status, df_open_sell = is_open_sell_order(db_conn, row['isin'])
-
-        buy_price = row['price']
-        total_quantity = row['quantity']
-
-        if not status:
-            print("Executing an order... sell isin:", row['isin'])
-            create_order(db_conn, row['isin'], "sell", total_quantity, ts_to_unix(generate_ts(100)), "limit", limit_price = profit_margin*buy_price, stop_price = None)
-        
-        elif status:
-            df = get_last_N_prices(db_conn, row['isin'], 1)
-            if len(df.index) < 1:
-                continue
-            
-            # getting current(latest) price from 'prices'
-            latest_price = df.iloc[0]['bid_price']
-            print(latest_price, buy_price)
-            if (1.0 - latest_price / buy_price) > stop_loss_threshold:
-                for _, row1 in df_open_sell.iterrows():
-                    if row1['type'] != 'market':
-                        delete_order(db_conn, row1['order_uuid'])
-                        create_order(db_conn, row1['isin'], "sell", row1['quantity'], ts_to_unix(generate_ts(5)), "market", limit_price = None, stop_price = None)
-                 
-
     return None
 
 def calculate_moving_average(db_conn, window_length, buffer_size, isin):
