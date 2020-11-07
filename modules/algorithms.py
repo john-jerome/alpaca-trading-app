@@ -126,73 +126,7 @@ def verify_orders(stop_event, period):
     close_connection(db_conn)
     print("Stop verifying orders...")
     return None
-
-def buy_strategy_moving_average(db_conn, window_length, lookback_len, isin_for_analysis = isin_for_analysis):
-    """[summary]
-
-    Args:
-        db_conn (sqlite3.connect): database connection object
-        window_length (int): moving average window length
-        lookback_len (int): lookback length for calculating price change
-
-    Raises:
-        ValueError: [description]
-
-    Returns:
-        None
-    """
-    try:
-        buy_strategy_moving_average.df_moving_average
-    except: 
-        buy_strategy_moving_average.df_moving_average = pd.DataFrame(columns=['isin', 'moving average'])
-    for isin in get_all_isin(db_conn):
-
-        # ignore isin if there is already open buy
-        status, _ = is_open_buy_order(db_conn, isin)
-        if status or is_in_potfolio(db_conn, isin):
-            continue
-         
-        df = get_last_N_prices(db_conn, isin, window_length)
-        if len(df.index) >= window_length:
-            if ts_check:
-                raise ValueError("Data in the database is outdated.")
-            else:
-                mean = df['ask_price'].mean()
-
-                # block to save data for analytics in mean_analysis
-                if isin in isin_for_analysis:
-                    latest_timestamp = df.iloc[0]['date']
-                    row = (
-                        isin,
-                        mean.item(),
-                        latest_timestamp.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
-                    )
-                    insert_one_row(db_conn, row, table = 'mean_analysis')
-                # check if isin appears for the first time
-                if isin in buy_strategy_moving_average.df_moving_average['isin'].unique():
-                    # add incoming mean value
-                    isin_row = buy_strategy_moving_average.df_moving_average.loc[buy_strategy_moving_average.df_moving_average['isin'] == isin]
-                    # Check if moving average list is full
-                    assert (len(isin_row['moving average'][0]) <= lookback_len)
-                    isin_row['moving average'][0].append(mean)
-                    if len(isin_row['moving average'][0]) > lookback_len:
-                        isin_row['moving average'][0].pop(0)
-                        # check difference between first and last values
-                        
-                        last_price = isin_row['moving average'][0][-1]
-                        if (last_price - isin_row['moving average'][0][0] >= percent_to_frac*percent_diff*isin_row['moving average'][0][0]):
-                            print("Executing an order... buy isin:", isin)
-                            # buy: number of shares based on moving average price, valid for 5 minutes
-                            
-                            latest_stock_price = df.iloc[0]['bid_price']
-                            n_shares = math.floor(buy_amount/latest_stock_price)
-                            create_order(db_conn, isin, "buy", n_shares, ts_to_unix(generate_ts(5)), "market", limit_price = None, stop_price = None)
-                else: # append to the dataframe if isin appears first time
-                    init_isin = pd.DataFrame({'isin': isin, 'moving average': [[mean]]})
-                    buy_strategy_moving_average.df_moving_average = buy_strategy_moving_average.df_moving_average.append(init_isin)
-        else:
-            continue # not enough data for calculations
-    return None
+        df_open_sell (pandas df): df with open sell orders for this instrument
 
 def sell_strategy_limit(db_conn):
     """Open a sell order in none already exists.
@@ -318,23 +252,23 @@ def buy_strategy_first_momentum(db_conn, window_length, lookback_len):
         
     return None
 
-    def buy_strategy_moving_average_2(db_conn, window_length, lookback_len):
-        # do calculations for all isin
-        for isin in get_all_isin(db_conn):
-            # ignore isin if there is already open buy
-            status, _ = is_open_buy_order(db_conn, isin)
-            if status or is_in_potfolio(db_conn, isin):
-                continue
-            try:
-                means = calculate_moving_average(db_conn, window_length, lookback_len + 1, isin)
-            # ignore isin if means are not calculated yet
-            except ValueError:
-                continue
-            # wait until enough moving average values are calculated
-            if means.size < lookback_len + 1:
-                continue
-            # check if momentum is changing to positive direction
-            if means[-1] - means[0] >= percent_to_frac*percent_diff*means[0]:
-                buy_shares(db_conn, isin, buy_amount, minutes_valid = 5)
-        
-        return None
+def buy_strategy_moving_average(db_conn, window_length, lookback_len):
+    # do calculations for all isin
+    for isin in get_all_isin(db_conn):
+        # ignore isin if there is already open buy
+        status, _ = is_open_buy_order(db_conn, isin)
+        if status or is_in_potfolio(db_conn, isin):
+            continue
+        try:
+            means = calculate_moving_average(db_conn, window_length, lookback_len + 1, isin)
+        # ignore isin if means are not calculated yet
+        except ValueError:
+            continue
+        # wait until enough moving average values are calculated
+        if means.size < lookback_len + 1:
+            continue
+        # check if momentum is changing to positive direction
+        if means[-1] - means[0] >= percent_to_frac*percent_diff*means[0]:
+            buy_shares(db_conn, isin, buy_amount, minutes_valid = 5)
+    
+    return None
