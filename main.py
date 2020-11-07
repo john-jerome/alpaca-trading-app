@@ -15,23 +15,27 @@ def main():
   config = configparser.ConfigParser()
   config.read('config.ini')
   db = config['sqlite']['database']
-  program_state = 'Init'
   
   period_buy = config.getint('thread_params', 'period_buy') # in seconds
   period_sell = config.getint('thread_params', 'period_sell') # in seconds
   period_verify = config.getint('thread_params', 'period_verify') # in seconds
+  window_length = config.getint('algo_params', 'window_length')
+  lookback_length = config.getint('algo_params', 'lookback_length')
+  stop_loss = config.getfloat('algo_params', 'stop_loss_threshold')
+  profit_margin = config.getfloat('algo_params', 'profit_margin')
+  buy_amount = config.getint('algo_params', 'buy_amount')
 
   try:
+    strategy_buy = {'algorithm':'moving_average', 'period': period_buy, 'buy_amount': buy_amount, 'window_length': window_length, 'lookback_length': lookback_length}
+    strategy_sell = {'algorithm':'limit', 'period': period_sell, 'stop_loss': stop_loss, 'profit_margin': profit_margin}
     # Create threads: receive and write to database; buy stocks; sell stocks; verify open orders
-    trading_algo = Strategy(strategy_buy="moving_average", strategy_sell="limit", period_buy = period_buy, period_sell = period_sell)
-    trading_algo.window_length = config.getint('algo_params', 'window_length')
-    trading_algo.lookback_length = lookback_length = config.getint('algo_params', 'lookback_length')
+    trading_algo = TradingBot(strategy_buy, strategy_sell)
     trading_algo.start()
 
     # watchdog for the program
     while True:
       number_of_threads = config.getint('thread_params', 'number_of_threads')
-      if program_state == 'Init' and threading.active_count() == number_of_threads:
+      if program_state == 'Shutdown' and threading.active_count() == number_of_threads:
         print("Program started normally")
         program_state = 'Normal'
         # send telegram notification

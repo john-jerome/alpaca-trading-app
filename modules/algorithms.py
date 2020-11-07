@@ -4,7 +4,6 @@ import pandas as pd
 import configparser
 import sys
 import math
-from queue import Queue
 import numpy as np
 
 sys.path.insert(0,'modules')
@@ -23,76 +22,10 @@ current_ts = generate_ts()
 ts_check = config.getboolean('internal_params', 'ts_check')
 ts_delay = int(config['internal_params']['ts_delay'])
 percent_diff = config.getfloat('algo_params', 'percent_diff')
-profit_margin = config.getfloat('algo_params', 'profit_margin')
-buy_amount = config.getint('algo_params', 'buy_amount')
 percent_to_frac = config.getfloat('conversion_params', 'percent_to_frac')
-stop_loss_threshold = config.getfloat('algo_params', 'stop_loss_threshold')
 
 # collecting data for analysis
 isin_for_analysis = ['US58933Y1055', 'US00287Y1091']
-
-def is_in_potfolio(db_conn, isin):
-    """Check if an instrument is already in the portfolio.
-
-    Args:
-        db_conn (sqlite3.connect): database connection object
-        isin (string): isin of an instrument
-
-    Returns:
-        True or False
-    """
-
-    df_portfolio = get_current_portfolio()
-    if isin in df_portfolio['isin'].unique():
-        return True
-    else:
-        return False
-
-def is_open_buy_order(db_conn, isin):
-    """Check if there is an open buy order for isin.
-
-    Args:
-        db_conn (sqlite3.connect): database connection object
-        isin (string): isin of an instrument
-
-    Returns:
-        status (boolean): True or False
-        df_open_buy (pandas df): df with open buy orders for this instrument
-    """
-
-    sql_select_open_buy = """SELECT uuid, isin, type, quantity FROM open_buy_orders where isin = '{}'""".format(isin)
-    open_buy = select_data(db_conn, sql_select_open_buy)
-    df_open_buy = pd.DataFrame(open_buy, columns = ['order_uuid', 'isin', 'type', 'quantity'])
-
-    if isin in df_open_buy['isin'].unique():
-        status =  True
-    else:
-        status =  False
-
-    return status, df_open_buy
-
-def is_open_sell_order(db_conn, isin):
-    """Check if there is an open sell order for isin.
-
-    Args:
-        db_conn (sqlite3.connect): database connection object
-        isin (string): isin of an instrument
-
-    Returns:
-        status (boolean): True or False
-        df_open_sell (pandas df): df with open sell orders for this instrument
-    """
-
-    sql_select_open_sell = """SELECT uuid, isin, type, quantity FROM open_sell_orders where isin = '{}'""".format(isin)
-    open_sell = select_data(db_conn, sql_select_open_sell)
-    df_open_sell = pd.DataFrame(open_sell, columns = ['order_uuid', 'isin', 'type', 'quantity'])
-
-    if isin in df_open_sell['isin'].unique():
-        status =  True
-    else:
-        status =  False
-
-    return status, df_open_sell
 
 def verify_orders(stop_event, period):
     """Thread to verify execution of open buy/sell orders
@@ -128,7 +61,7 @@ def verify_orders(stop_event, period):
     return None
         df_open_sell (pandas df): df with open sell orders for this instrument
 
-def sell_strategy_limit(db_conn):
+def sell_strategy_limit(db_conn, stop_loss_threshold, profit_margin):
     """Open a sell order in none already exists.
     If exists and the current price is too low, manually 'convert' it to a market order.
 
@@ -252,7 +185,7 @@ def buy_strategy_first_momentum(db_conn, window_length, lookback_len):
         
     return None
 
-def buy_strategy_moving_average(db_conn, window_length, lookback_len):
+def buy_strategy_moving_average(db_conn, buy_amount, window_length, lookback_len):
     # do calculations for all isin
     for isin in get_all_isin(db_conn):
         # ignore isin if there is already open buy

@@ -15,18 +15,14 @@ config.read('config.ini')
 db = config['sqlite']['database']
 
 class TradingBot(object):
-    def __init__(self, strategy_buy, strategy_sell, period_buy = 45, period_sell = 45, period_verify = 30, *args, **kwargs):
+    def __init__(self, strategy_buy, strategy_sell, period_verify = 30):
         self.__stop_receiving_data = threading.Event()
         self.__stop_verifying_orders = threading.Event()
         self.__stop_buying = threading.Event()
         self.__stop_selling = threading.Event()
         self.strategy_buy = strategy_buy
         self.strategy_sell = strategy_sell
-        self.period_verify = period_verify # seconds
-        self.period_buy = period_buy # seconds
-        self.period_sell = period_sell # seconds
-        self.window_length = kwargs.get('window_length', None)
-        self.lookback_length = kwargs.get('lookback_length', None)
+        self.period_verify = period_verify
 
     def __start_receiving_data(self):
         receive_data_thread = threading.Thread(target = receive_data, args=(self.__stop_receiving_data, ))
@@ -40,18 +36,18 @@ class TradingBot(object):
         db_conn = create_connection(db)
         with db_conn:
             while not self.__stop_buying.is_set():
-                if self.strategy_buy == 'moving_average':
-                    assert (self.window_length != None), "Window length is required"
-                    assert (self.lookback_length != None), "Lookback length is required"
-                    buy_strategy_moving_average(db_conn, self.window_length, self.lookback_length)
-                elif self.strategy_buy == 'first_momentum':
-                    assert (self.window_length != None), "Window length is required"
-                    assert (self.lookback_length != None), "Lookback length is required"
-                    buy_strategy_first_momentum(db_conn, self.window_length, self.lookback_length)
+                if self.strategy_buy['algorithm'] == 'moving_average':
+                    assert ('window_length' in self.strategy_buy), "Window length is required"
+                    assert ('lookback_length' in self.strategy_buy), "Lookback length is required"
+                    buy_strategy_moving_average(db_conn, self.strategy_buy['buy_amount'],self.strategy_buy['window_length'], self.strategy_buy['lookback_length'])
+                elif self.strategy_buy['algorithm'] == 'first_momentum':
+                    assert ('window_length' in self.strategy_buy), "Window length is required"
+                    assert ('lookback_length' in self.strategy_buy), "Lookback length is required"
+                    buy_strategy_first_momentum(db_conn, self.strategy_buy['window_length'], self.strategy_buy['lookback_length'])
                 else:
-                    print("The specified buy strategy does not exist")
+                    print("The specified buy algorithm does not exist")
                     self.stop()
-                time.sleep(self.period_buy)
+                time.sleep(self.strategy_buy['period'])
 
         close_connection(db_conn)
         print("Stop buying stocks...")
@@ -61,12 +57,14 @@ class TradingBot(object):
         db_conn = create_connection(db)
         with db_conn:
             while not self.__stop_selling.is_set():
-                if self.strategy_sell == 'limit':
-                    sell_strategy_limit(db_conn)
+                if self.strategy_sell['algorithm'] == 'limit':
+                    assert ('stop_loss' in self.strategy_sell), "Stop loss threshold is required"
+                    assert ('profit_margin' in self.strategy_sell), "Profit margin is required"
+                    sell_strategy_limit(db_conn, self.strategy_sell['stop_loss'], self.strategy_sell['profit_margin'])
                 else:
-                    print("The specified sell strategy does not exist")
+                    print("The specified sell algorithm does not exist")
                     self.stop()
-                time.sleep(self.period_sell)
+                time.sleep(self.strategy_sell['period'])
 
         close_connection(db_conn)
         print("Stop selling stocks...")
