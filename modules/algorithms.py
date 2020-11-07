@@ -11,18 +11,11 @@ sys.path.insert(0,'modules')
 from database import create_connection, select_data, generate_ts, ts_to_unix, insert_one_row, close_connection
 from orders import verify_order_execution, create_order, get_current_portfolio, delete_order
 from helpers import is_standard_hours, is_otc_hours, get_last_N_prices, get_all_isin
+from portfolio import is_in_potfolio, is_open_buy_order, is_open_sell_order
 
 config = configparser.ConfigParser()
 config.read('config.ini')
-
 db = config['sqlite']['database']
-
-current_ts = generate_ts()
-
-ts_check = config.getboolean('internal_params', 'ts_check')
-ts_delay = int(config['internal_params']['ts_delay'])
-percent_diff = config.getfloat('algo_params', 'percent_diff')
-percent_to_frac = config.getfloat('conversion_params', 'percent_to_frac')
 
 # collecting data for analysis
 isin_for_analysis = ['US58933Y1055', 'US00287Y1091']
@@ -123,7 +116,7 @@ def calculate_moving_average(db_conn, window_length, buffer_size, isin):
     
     df = get_last_N_prices(db_conn, isin, window_length)
     # if not enough data for moving average calculation or wrong timestamps
-    if len(df.index) < window_length or ts_check:
+    if len(df.index) < window_length:
         raise ValueError("Not suitable data for moving average calculation")
     mean = df['ask_price'].mean()
 
@@ -185,7 +178,7 @@ def buy_strategy_first_momentum(db_conn, window_length, lookback_len):
         
     return None
 
-def buy_strategy_moving_average(db_conn, buy_amount, window_length, lookback_len):
+def buy_strategy_moving_average(db_conn, buy_amount, window_length, lookback_len, buy_threshold):
     # do calculations for all isin
     for isin in get_all_isin(db_conn):
         # ignore isin if there is already open buy
@@ -201,7 +194,7 @@ def buy_strategy_moving_average(db_conn, buy_amount, window_length, lookback_len
         if means.size < lookback_len + 1:
             continue
         # check if momentum is changing to positive direction
-        if means[-1] - means[0] >= percent_to_frac*percent_diff*means[0]:
+        if means[-1] - means[0] >= buy_threshold*means[0]:
             buy_shares(db_conn, isin, buy_amount, minutes_valid = 5)
     
     return None

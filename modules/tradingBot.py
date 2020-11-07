@@ -39,11 +39,13 @@ class TradingBot(object):
                 if self.strategy_buy['algorithm'] == 'moving_average':
                     assert ('window_length' in self.strategy_buy), "Window length is required"
                     assert ('lookback_length' in self.strategy_buy), "Lookback length is required"
-                    buy_strategy_moving_average(db_conn, self.strategy_buy['buy_amount'],self.strategy_buy['window_length'], self.strategy_buy['lookback_length'])
+                    assert ('buy_threshold' in self.strategy_buy), "Buy threshold is required"
+                    buy_strategy_moving_average(db_conn, self.strategy_buy['buy_amount'], self.strategy_buy['window_len'], self.strategy_buy['lookback_len'], self.strategy_buy['buy_threshold'])
                 elif self.strategy_buy['algorithm'] == 'first_momentum':
                     assert ('window_length' in self.strategy_buy), "Window length is required"
                     assert ('lookback_length' in self.strategy_buy), "Lookback length is required"
-                    buy_strategy_first_momentum(db_conn, self.strategy_buy['window_length'], self.strategy_buy['lookback_length'])
+                    assert ('buy_threshold' in self.strategy_buy), "Buy threshold is required"
+                    buy_strategy_first_momentum(db_conn, self.strategy_buy['buy_amount'], self.strategy_buy['window_len'], self.strategy_buy['lookback_len'], self.strategy_buy['buy_threshold'])
                 else:
                     print("The specified buy algorithm does not exist")
                     self.stop()
