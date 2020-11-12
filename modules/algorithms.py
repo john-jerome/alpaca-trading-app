@@ -1,23 +1,6 @@
 import time
-import pandas as pd
-import configparser
-import sys
 import math
 import numpy as np
-
-sys.path.insert(0,'modules')
-
-from database import generate_ts, ts_to_unix, insert_one_row
-from orders import create_order
-from helpers import get_last_N_prices, get_all_isin
-from portfolio import is_in_potfolio, is_open_buy_order
-
-config = configparser.ConfigParser()
-config.read('config.ini')
-db = config['sqlite']['database']
-
-# collecting data for analysis
-isin_for_analysis = ['US58933Y1055', 'US00287Y1091']
 
 class Algorithms:
     def __calculate_moving_average(db_conn, window_length, buffer_size, isin):

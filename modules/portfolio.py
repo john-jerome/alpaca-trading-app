@@ -5,8 +5,10 @@ from database import select_data
 from orders import get_current_portfolio
 
 class Portfolio:
-    def __init__(self, api_conn):
-        self.__api_key = api_conn
+    # database -> Database class
+    def __init__(self, api_conn, database):
+        self.api_conn = api_conn
+        self.database = database
 
     def delete_order(order_uuid):
         pass
