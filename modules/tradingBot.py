@@ -16,7 +16,6 @@ db = config['sqlite']['database']
 
 class TradingBot(object):
     def __init__(self, strategy_buy, strategy_sell, period_verify = 30):
-        self.__stop_receiving_data = threading.Event()
         self.__stop_verifying_orders = threading.Event()
         self.__stop_buying = threading.Event()
         self.__stop_selling = threading.Event()
@@ -75,7 +74,6 @@ class TradingBot(object):
         sell_thread.start()
     
     def stop(self):
-        self.__stop_receiving_data.set()
         self.__stop_buying.set()
         self.__stop_selling.set()
         self.__stop_verifying_orders.set()
