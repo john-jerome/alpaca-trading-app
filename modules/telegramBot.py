@@ -16,7 +16,7 @@ def send_state(action):
         action ([string]): "started", "stopped" or "manually stopped"
 
     Returns:
-        [None]: [None]
+        None
     """
     message = ""
     if action == "started":
@@ -34,9 +34,10 @@ def send_state(action):
     }
 
     requests.request("POST", url, params=params)
+
     return None
 
-def send_message(action, instrument = None, order_type = None, side = None,\
+def send_message(action, account, instrument = None, order_type = None, side = None,\
      time = None, valid_until = None, price = None, quantity = None, order_uuid = None):
     """[summary]
 
@@ -58,17 +59,14 @@ def send_message(action, instrument = None, order_type = None, side = None,\
 
     if action == 'create':
         if order_type == 'limit':
-            message = "We have <b>{}d</b> a {} <b>{}</b> order for <b>{}</b>: {} share(s) at <b>{}</b>€ at {}. It's valid until {}."\
-                .format(action, order_type, side, instrument, quantity, round(float(price),2), time, valid_until)
+            message = "<b>{}</b>: We have <b>{}d</b> a {} <b>{}</b> order for <b>{}</b>: {} share(s) at <b>{}</b>€ at {}. It's valid until {}."\
+                .format(account.upper(), action, order_type, side, instrument, quantity, round(float(price),2), time, valid_until)
         elif order_type == 'market':
-            message = "We have <b>{}d</b> a {} <b>{}</b> order for <b>{}</b>: {} share(s) at the market price at {}. It's valid until {}."\
-                .format(action, order_type, side, instrument, quantity, time, valid_until)
-    elif action == 'delete':
-        message = "We have <b>{}d</b> an order <b>{}</b>."\
-            .format(action, order_uuid)
+            message = "<b>{}</b>: We have <b>{}d</b> a {} <b>{}</b> order for <b>{}</b>: {} share(s) at the market price at {}. It's valid until {}."\
+                .format(account.upper(), action, order_type, side, instrument, quantity, time, valid_until)
     elif action == 'execute':
-        message = "We have <b>{}d</b> a {} <b>{}</b> order for <b>{}</b>: {} share(s) at <b>{}</b>€ at {}."\
-            .format(action, order_type, side, instrument, quantity, price, time)
+        message = "<b>{}</b>: We have <b>{}d</b> a {} <b>{}</b> order for <b>{}</b>: {} share(s) at <b>{}</b>€ at {}."\
+            .format(account.upper(), action, order_type, side, instrument, quantity, price, time)
 
     params = {
         'chat_id': chat_id, 
