@@ -1,101 +1,90 @@
-import sqlite3
+import psycopg2
+import os
 import pandas as pd
-
+import configparser
 from datetime import datetime, timedelta
-from sqlite3 import Error
+
+config = configparser.ConfigParser()
+config.read('config.ini') 
+db = config['database']['database_uri']
 
 class Database():
-    def __init__(self, db_file):
-        self.db_file = db_file
-
-    def get_last_N_prices():
-        pass
-
-    def get_all_isin():
-        pass
-
-    def prices_cleanup():
-        pass
+    def __init__(self, database_uri):
+        self.database_uri = database_uri
     
-    def create_connection():
-        """Сreate a database connection to a SQLite database """
-        
-        conn = None
-        try:
-            conn = sqlite3.connect(self.db_file)
-        except Error as e:
-            print(e)
-
-        return conn
-
-    def select_data(conn, select_query):
-        """Execute a select query on the database."""
-
-        rows = []
-
-        try:
-            c = conn.cursor()
-            c.execute(select_query)
-            rows = c.fetchall()    
-        except Error as e:
-            print(e)
-        
-        return rows
-
-    def insert_one_row(conn, row, table):
+    def create_connection(self):
         """[summary]
-
-        Args:
-            conn ([type]): [description]
-            row ([type]): [description]
-            table ([type]): [description]
 
         Returns:
             [type]: [description]
         """
-        l = len(row)
+    
+        try:
+            conn = psycopg2.connect(self.database_uri, sslmode='require')
+        except (Exception, psycopg2.DatabaseError) as error:
+            conn = None
+            print(error)
 
-        values = '?'+',?'*(l-1)
+        return conn
 
-        sql = ''' INSERT INTO {}
-                VALUES({}) '''.format(table, str(values))
-        
-        cur = conn.cursor()
+    def select_data(self, conn, select_query):
+        """[summary]
+
+        Args:
+            conn ([type]): [description]
+            select_query ([type]): [description]
+
+        Returns:
+            [type]: [description]
+        """
+
+        rows = []
 
         try:
-            cur.execute(sql, row)
+            cursor = conn.cursor()
+            cursor.execute(select_query)
+            rows = cursor.fetchall()    
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+        
+        df = pd.DataFrame(rows)
+        return df
+
+    def insert_one_row(self, conn, row, table_name):
+        """[summary]
+
+        Args:
+            conn ([type]): database connection object
+            row ([type]): row of data to insert
+            table_name ([type]): table name
+
+        Returns:
+            None
+        """
+
+        l = len(row)
+        values = '?'+',?'*(l-1)
+        sql = """ INSERT INTO {}
+                VALUES({}) """.format(table_name, str(values))
+        
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute(sql, row)
             conn.commit()
-        except Error as e:
-            print(e)
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
 
         return None
 
-    def close_connection(conn):
+    def close_connection(self, conn):
 
         try:
             conn.close()
-        except Error as e:
-            print(e)
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
 
         return None
 
-    def generate_ts(delay_minutes = 0):
-        """Generate current local timestamp."""
 
-        current_ts = datetime.now() + timedelta(minutes=delay_minutes)
-
-        return current_ts
-
-    def unix_to_ts(unix_date):
-        """Conver unix date to timestamp."""
-
-        ts = datetime.fromtimestamp(unix_date).strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
-
-        return ts
-
-    def ts_to_unix(ts):
-        """Convert timestamp to unix date."""
-
-        unix_date = datetime.timestamp(ts)
-
-        return unix_date
+    

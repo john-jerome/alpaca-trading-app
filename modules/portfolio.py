@@ -1,6 +1,8 @@
 import pandas as pd
+import sys
 
 sys.path.insert(0,'modules')
+
 from database import select_data
 from orders import get_current_portfolio
 
