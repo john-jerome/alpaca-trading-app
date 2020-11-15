@@ -3,13 +3,15 @@ import math
 import numpy as np
 from modules.database import Database
 
-class Algorithms:
-    def __init__(self, db_conn):
+class Strategy:
+    def __init__(self, db_conn, buy_strategy, sell_strategy):
         self.means = {}
+        self.trading_list = []
         self.db_conn = db_conn
-
+        self.buy_strategy = buy_strategy
+        self.sell_strategy = sell_strategy
     
-    def get_means(db_conn, window_length, buffer_size, isin):
+    def calculate_means(db_conn, window_length, buffer_size, isin):
         """Calculates moving averages for the isin
         The function shall be called periodically from the same place 
         Args:
@@ -51,7 +53,7 @@ class Algorithms:
 
         return np.asarray(self.means[isin])
 
-    def buy_strategy_first_momentum(db_conn, window_length, lookback_len):
+    def buy_strategy_first_momentum(db_conn, window_length, lookback_len, account):
         # do calculations for all isin
         for isin in get_all_isin(db_conn):
             # ignore isin if there is already open buy
@@ -59,7 +61,7 @@ class Algorithms:
             if status or is_in_potfolio(db_conn, isin):
                 continue
             try:
-                means = calculate_moving_average(db_conn, window_length, lookback_len + 1, isin)
+                means = calculate_means(db_conn, window_length, lookback_len + 1, isin)
             # ignore isin if means are not calculated yet
             except ValueError:
                 continue
@@ -69,11 +71,12 @@ class Algorithms:
             deltas_means = np.diff(means)
             # check if momentum is changing to positive direction
             if np.all(np.all(deltas_means[1:] > deltas_means[:-1])):
-                buy_shares(db_conn, isin, buy_amount, minutes_valid = 5)
+                self.trading_list.append({'stock':isin, 'trade_type': 'bracket'})
+                #buy_shares(db_conn, isin, buy_amount, minutes_valid = 5)
             
         return None
 
-    def buy_strategy_moving_average(db_conn, buy_amount, window_length, lookback_len, buy_threshold):
+    def buy_strategy_moving_average(db_conn, buy_amount, window_length, lookback_len, buy_threshold, account):
         # do calculations for all isin
         for isin in get_all_isin(db_conn):
             # ignore isin if there is already open buy
@@ -81,7 +84,7 @@ class Algorithms:
             if status or is_in_potfolio(db_conn, isin):
                 continue
             try:
-                means = calculate_moving_average(db_conn, window_length, lookback_len + 1, isin)
+                means = calculate_means(db_conn, window_length, lookback_len + 1, isin)
             # ignore isin if means are not calculated yet
             except ValueError:
                 continue
@@ -90,6 +93,13 @@ class Algorithms:
                 continue
             # check if momentum is changing to positive direction
             if means[-1] - means[0] >= buy_threshold*means[0]:
-                buy_shares(db_conn, isin, buy_amount, minutes_valid = 5)
+                self.trading_list.append({'stock':isin, 'trade_type': 'bracket'})
+                #buy_shares(db_conn, isin, buy_amount, minutes_valid = 5)
         
         return None
+
+    def get_trades(self):
+        trading_list = []
+        if buy_strategy == 'first_momentum' and sell_strategy == 'limit':
+            buy_strategy_first_momentum()
+        return trading_list 
