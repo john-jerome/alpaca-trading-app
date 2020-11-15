@@ -3,10 +3,18 @@ import sys
 import configparser
 
 sys.path.insert(0,'modules')
-from tg_notifications import send_state
+from telegramBot import send_state
 from helpers import prices_cleanup
 from database import create_connection
 from tradingBot import TradingBot
+
+config = configparser.ConfigParser()
+config.read('config.ini')
+
+headers = {
+  'APCA-API-KEY-ID': config['alpaca-paper']['APCA_API_KEY_ID'],
+  'APCA-API-SECRET-KEY': config['alpaca-paper']['APCA_API_SECRET_KEY']
+}
 
 def main():
 
