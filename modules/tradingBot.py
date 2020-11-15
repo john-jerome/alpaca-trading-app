@@ -1,37 +1,24 @@
 import threading
 import time
-import weakref
 import configparser
 import sys
-from enum import Enum
 
 sys.path.insert(0,'modules')
-from websocket_conn import receive_data
 from strategy import Strategy
 from database import Database
 
-config = configparser.ConfigParser()
-config.read('config.ini') 
-db = config['sqlite']['database']
-
 class TradingBot():
-    def __init__(self, strategy_buy, strategy_sell, account, strategy):
+    def __init__(self, strategy, account):
         self.__stop_trading = threading.Event()
-        self.strategy_buy = strategy_buy
-        self.strategy_sell = strategy_sell
-        self.account = account
         self.strategy = strategy
-    
-    def __start_verifying_orders(self):
-        verify_orders_thread = threading.Thread(target = verify_orders, args=(self.__stop_verifying_orders, self.period_verify, ))
-        verify_orders_thread.start()
+        self.account = account
     
     def __start_trading(self):
         db_conn = create_connection(db)
         with db_conn:
             while not self.__stop_trading.is_set():
-                if self.strategy_buy['algorithm'] == 'moving_average':
-                    self.strategy.get_trading
+                for trade in self.strategy.get_symbols_to_trade():
+                    account.create_bracket_order(trade)
                 time.sleep(self.strategy_buy['period'])
 
         close_connection(db_conn)
@@ -50,15 +37,14 @@ class TradingBot():
     
     def stop(self):
         self.__stop_trading.set()
-        self.__stop_verifying_orders.set()
     
-    def buy_shares(db_conn, isin, buy_amount, minutes_valid):
-        print("Executing an order... buy isin:", isin)
+    def buy_shares(db_conn, symbol, buy_amount, minutes_valid):
+        print("Executing an order... buy symbol:", symbol)
         # buy: number of shares based on moving average price, valid for 5 minutes
         try:
-            latest_stock_price = get_last_N_prices(db_conn, isin, 1).iloc[0]['bid_price']
+            latest_stock_price = get_last_N_prices(db_conn, symbol, 1).iloc[0]['bid_price']
             n_shares = math.floor(buy_amount/latest_stock_price)
-            create_order(db_conn, isin, "buy", n_shares, ts_to_unix(generate_ts(minutes_valid)), "market", limit_price = None, stop_price = None)
+            account.create_bracket_order(db_conn, symbol, "buy", n_shares, ts_to_unix(generate_ts(minutes_valid)), "market", limit_price = None, stop_price = None)
         except:
             print("Buying shares failed")
 
