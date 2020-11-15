@@ -2,17 +2,19 @@ import psycopg2
 import os
 import pandas as pd
 import configparser
+import sys
 from datetime import datetime, timedelta
+
+sys.path.insert(0,'modules')
 
 config = configparser.ConfigParser()
 config.read('config.ini') 
 database_uri = config['database']['database_uri']
 
 class Database:
-    def __init__(self, database_uri):
-        self.database_uri = database_uri
     
-    def create_connection(self):
+    @staticmethod
+    def create_connection(database_uri):
         """[summary]
 
         Returns:
@@ -20,14 +22,15 @@ class Database:
         """
     
         try:
-            conn = psycopg2.connect(self.database_uri, sslmode='require')
+            conn = psycopg2.connect(database_uri, sslmode='require')
         except (Exception, psycopg2.DatabaseError) as error:
             conn = None
             print(error)
 
         return conn
-
-    def select_data(self, conn, select_query):
+        
+    @staticmethod
+    def select_data(conn, select_query):
         """[summary]
 
         Args:
@@ -50,7 +53,8 @@ class Database:
         df = pd.DataFrame(rows)
         return df
 
-    def insert_one_row(self, conn, row, table_name):
+    @staticmethod
+    def insert_one_row(conn, row, table_name):
         """[summary]
 
         Args:
@@ -66,10 +70,9 @@ class Database:
         values = '?'+',?'*(l-1)
         sql = """ INSERT INTO {}
                 VALUES({}) """.format(table_name, str(values))
-        
-        cursor = conn.cursor()
 
         try:
+            cursor = conn.cursor()
             cursor.execute(sql, row)
             conn.commit()
         except (Exception, psycopg2.DatabaseError) as error:
@@ -77,7 +80,8 @@ class Database:
 
         return None
 
-    def close_connection(self, conn):
+    @staticmethod
+    def close_connection(conn):
 
         try:
             conn.close()
@@ -85,6 +89,7 @@ class Database:
             print(error)
 
         return None
+
 
 
     

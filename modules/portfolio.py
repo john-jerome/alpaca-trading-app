@@ -1,17 +1,37 @@
 import pandas as pd
 import configparser
 import requests
-from Database import create_connection
+import sys
+import json
+
+sys.path.insert(0,'modules')
+
+from database import Database
+
 config = configparser.ConfigParser()
 config.read('config.ini')
 
 class Portfolio:
     # database -> Database class
-    def __init__(self, account_id, database_uri):
+    def __init__(self, account_id, db_conn):
         self.account_id = account_id
-        self.database_uri = database_uri
-    def start(self):
-        create_
+        self.db_conn = db_conn
+    
+    def generate_auth_headers(self):
+        
+        if self.account_id == 'ua':
+            headers = {
+                'APCA-API-KEY-ID': 'PKXWA7LGA9LHVI6UT6RM',
+                'APCA-API-SECRET-KEY': 'UpcoULBZm9XrW3u7sR5676TcjxZbzrOf1PKcd31v'
+            }
+        elif self.account_id == 'kz':
+            headers = {
+                'APCA-API-KEY-ID': 'PKXWA7LGA9LHVI6UT6RM',
+                'APCA-API-SECRET-KEY': 'UpcoULBZm9XrW3u7sR5676TcjxZbzrOf1PKcd31v'
+            }
+        
+        return headers
+
     def create_simple_order(self, symbol, quantity, side, type, time_in_force, limit_price = None, stop_price = None):
         """[summary]
 
@@ -27,6 +47,7 @@ class Portfolio:
         Returns:
             [type]: [description]
         """
+        # won't be used for now - add row selection later
         #time in force: https://alpaca.markets/docs/trading-on-alpaca/orders/#time-in-force
         url = "https://paper-api.alpaca.markets/v2/orders"
 
@@ -41,18 +62,46 @@ class Portfolio:
         if stop_price is not None:    
             payload['stop_price'] = stop_price
 
-        response = requests.request("POST", url, headers=self.auth_headers, data=payload)
+        response = requests.request("POST", url, headers=self.generate_auth_headers(), data=payload)
         
         if response.status_code == 200:
 
             response_dict = response.json()
+
+            row = (
+                response_dict['id'],
+                response_dict['symbol'],
+                response_dict['status'],
+                response_dict['side'],
+                response_dict['qty']
+            )
             
-            #insert_one_row(self.db_conn, row, table = 'alpaca.orders')
+            Database.insert_one_row(self.db_conn, row, table_name = 'alpaca.orders')
         
         return None
 
-    def create_bracket_order(self, order_class, symbol, quantity, side, type, time_in_force, limit_price, stop_price):
-        pass
+    def create_bracket_order(self, symbol, quantity, side, type, time_in_force, limit_price, stop_price, order_class = 'bracket'):
+        
+        url = "https://paper-api.alpaca.markets/v2/orders"
+
+        payload = {}
+        payload['symbol'] = symbol
+        payload['qty'] = quantity
+        payload['side'] = side
+        payload['type'] = type
+        payload['time_in_force'] = time_in_force
+        payload['order_class'] = order_class
+        payload['take_profit'] = {}
+        payload['take_profit']['limit_price'] = limit_price
+        payload['stop_loss'] = {}
+        payload['stop_loss']['stop_price'] = stop_price
+
+        print(payload)
+
+        response = requests.request("POST", url, headers=self.generate_auth_headers(), data=json.dumps(payload))
+        
+        # insert all orders into orders table 
+        return response.status_code, response.text
 
     def get_current_portfolio(self):
         """[summary]
@@ -63,7 +112,7 @@ class Portfolio:
 
         url = "https://paper-api.alpaca.markets/v2/positions"
 
-        response = requests.request("GET", url, headers=self.auth_headers)
+        response = requests.request("GET", url, headers=self.generate_auth_headers())
 
         if response.status_code == 200:
             positions = response.json()
@@ -71,59 +120,39 @@ class Portfolio:
             print("Couldn't get current portfolio.")
 
         return positions
-    
-    def delete_order(order_uuid):
-        pass
 
-    def is_in_potfolio(isin):
+
+    def is_in_potfolio(self, symbol):
         """Check if an instrument is already in the portfolio.
 
         Args:
-            db_conn (sqlite3.connect): database connection object
-            isin (string): isin of an instrument
+            symbol (string): instrument symbol
 
         Returns:
             True or False
         """
 
-        df_portfolio = get_current_portfolio()
-        if isin in df_portfolio['isin'].unique():
+        positions = self.get_current_portfolio()
+        if symbol in [position['symbol'] for position in positions]:
             return True
         else:
             return False
 
-    def is_open_order(self, conn, isin, side):
-
-        sql_select_open_buy = """SELECT uuid, isin, type, quantity FROM open_buy_orders where isin = '{}'""".format(isin)
-        open_buy = select_data(db_conn, sql_select_open_buy)
-        df_open_buy = pd.DataFrame(open_buy, columns = ['order_uuid', 'isin', 'type', 'quantity'])
-
-        if isin in df_open_buy['isin'].unique():
-            status =  True
-        else:
-            status =  False
-
-        return status, df_open_buy
-
-    def is_open_sell_order(db_conn, isin):
-        """Check if there is an open sell order for isin.
-
-        Args:
-            db_conn (sqlite3.connect): database connection object
-            isin (string): isin of an instrument
+    def get_open_orders(self, side):
+        """[summary]
 
         Returns:
-            status (boolean): True or False
-            df_open_sell (pandas df): df with open sell orders for this instrument
+            [type]: [description]
         """
 
-        sql_select_open_sell = """SELECT uuid, isin, type, quantity FROM open_sell_orders where isin = '{}'""".format(isin)
-        open_sell = select_data(db_conn, sql_select_open_sell)
-        df_open_sell = pd.DataFrame(open_sell, columns = ['order_uuid', 'isin', 'type', 'quantity'])
+        url = "https://paper-api.alpaca.markets/v2/orders"
 
-        if isin in df_open_sell['isin'].unique():
-            status =  True
+        response = requests.request("GET", url, headers=self.generate_auth_headers())
+        
+        if response.status_code == 200:
+            orders = response.json()
         else:
-            status =  False
+            print("Couldn't get open orders.")
 
-        return status, df_open_sell
+        orders['side'] == side
+        return orders
