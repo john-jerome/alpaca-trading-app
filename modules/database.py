@@ -8,7 +8,7 @@ config = configparser.ConfigParser()
 config.read('config.ini') 
 database_uri = config['database']['database_uri']
 
-class Database():
+class Database:
     def __init__(self, database_uri):
         self.database_uri = database_uri
     
