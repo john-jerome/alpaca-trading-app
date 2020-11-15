@@ -14,11 +14,6 @@ APCA_API_SECRET_KEY = config['alpaca-paper']['APCA_API_SECRET_KEY']
 
 class Receiver:
 
-    headers = {
-        'APCA-API-KEY-ID': APCA_API_KEY_ID,
-        'APCA-API-SECRET-KEY': APCA_API_SECRET_KEY
-    } 
-
     def __init__(self, websocket_url, database_uri, period):
         self.__stop_receiving_data = threading.Event()
         self.websocket_url = websocket_url
@@ -53,11 +48,12 @@ class Receiver:
         status = response['data']['status']
 
         return status
-    
-    def ws_listen(self, )
 
     def __receive_data(self, stop_event, symbol_list):
-        with Database.create_connection(self.database_uri)
+
+        conn = Database.create_connection(self.database_uri)
+        ws = self.ws_authenticate()
+        with conn:
             while not self.__stop_receiving_data.is_set():
                 payload = {
                     "action": "listen",
@@ -67,3 +63,9 @@ class Receiver:
                     }
                 ws.send(json.dumps(payload))
                 response = json.loads(ws.recv())
+
+                row = (
+
+                )
+
+                Database.insert_one_row(conn, row, table_name = 'alpaca.prices_bars')
