@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 config = configparser.ConfigParser()
 config.read('config.ini') 
-db = config['database']['database_uri']
+database_uri = config['database']['database_uri']
 
 class Database():
     def __init__(self, database_uri):
