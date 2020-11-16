@@ -146,13 +146,16 @@ class Portfolio:
         """
 
         url = "https://paper-api.alpaca.markets/v2/orders"
+        payload = {}
+        payload['status'] = 'closed'
 
-        response = requests.request("GET", url, headers=self.generate_auth_headers())
+        response = requests.request("GET", url, headers=self.generate_auth_headers(), data=payload)
         
         if response.status_code == 200:
             orders = response.json()
         else:
             print("Couldn't get open orders.")
 
-        orders['side'] == side
-        return orders
+        symbols = [order['symbol'] for order in orders if order['side'] == side]
+        
+        return symbols
