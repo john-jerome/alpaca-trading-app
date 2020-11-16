@@ -1,19 +1,22 @@
 import time
 import numpy as np
 import sys
+import pandas as pd
 
 sys.path.insert(0,'modules')
 from database import Database
 
 class Strategy:
-    def __init__(self, db_conn, buy_strategy, sell_strategy):
+    def __init__(self, db_conn, buy_strategy, sell_strategy, **kwargs):
         self.means = {}
         self.symbols_to_trade = []
         self.db_conn = db_conn
         self.buy_strategy = buy_strategy
         self.sell_strategy = sell_strategy
+        self.window_len = kwargs.get('window_len')
+        self.lookback_len = kwargs.get('lookback_len')
     
-    def calculate_means(window_length, buffer_size, symbol):
+    def calculate_means(self, window_len, buffer_size, symbol):
         """Calculates moving averages for the symbol
         The function shall be called periodically from the same place 
         Args:
@@ -26,21 +29,12 @@ class Strategy:
         Returns:
             means (np.array): moving averages for the symbol
         """
-        df = get_last_N_prices(self.db_conn, symbol, window_length)
+        df = pd.DataFrame(columns=['User_ID', 'UserName', 'Action']) #get_last_N_prices(self.db_conn, symbol, window_len)
         # if not enough data for moving average calculation or wrong timestamps
-        if len(df.index) < window_length:
+        if len(df.index) < window_len:
             raise ValueError("Not suitable data for moving average calculation")
         mean = df['ask_price'].mean()
 
-        # block to save data for analytics in mean_analysis
-        if symbol in symbol_for_analysis:
-            latest_timestamp = df.iloc[0]['date']
-            row = (
-                symbol,
-                mean.item(),
-                latest_timestamp.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
-            )
-            Database.insert_one_row(self.db_conn, row, table = 'mean_analysis')
         # check if symbol appears for the first time
         if symbol in self.means:
             # Check if means list is full
@@ -55,11 +49,12 @@ class Strategy:
 
         return np.asarray(self.means[symbol])
 
-    def buy_strategy_first_momentum(window_length, lookback_len, account):
+    def buy_strategy_first_momentum(self, window_len, lookback_len):
+        print("Started first momentum")
         # do calculations for all symbol
-        for symbol in get_all_symbol(self.db_conn):
+        for symbol in ['AAPL', 'TSLA']:
             try:
-                means = calculate_means(window_length, lookback_len + 1, symbol)
+                means = self.calculate_means(window_len, lookback_len + 1, symbol)
             # ignore symbol if means are not calculated yet
             except ValueError:
                 continue
@@ -73,12 +68,12 @@ class Strategy:
             
         return None
 
-    def buy_strategy_moving_average(buy_amount, window_length, lookback_len, buy_threshold, account):
+    def buy_strategy_moving_average(self, window_len, lookback_len, buy_threshold):
         # do calculations for all symbol
-        for symbol in get_all_symbol(self.db_conn):
+        for symbol in ['AAPL', 'TSLA']:
             # ignore symbol if there is already open buy
             try:
-                means = calculate_means(window_length, lookback_len + 1, symbol)
+                means = calculate_means(window_len, lookback_len + 1, symbol)
             # ignore symbol if means are not calculated yet
             except ValueError:
                 continue
@@ -93,6 +88,8 @@ class Strategy:
 
     def get_symbols_to_trade(self):
         self.symbols_to_trade = []
-        if buy_strategy == 'first_momentum' and sell_strategy == 'limit':
-            buy_strategy_first_momentum()
+        if self.buy_strategy == 'first_momentum' and self.sell_strategy == 'limit':
+            window_len = self.window_len
+            lookback_len = self.lookback_len
+            self.buy_strategy_first_momentum(window_len, lookback_len)
         return self.symbols_to_trade 
