@@ -7,7 +7,7 @@ import sys
 
 sys.path.insert(0,'modules')
 
-from helpers import unix_to_ts
+from helpers import unix_to_ts, is_market_open
 from database import Database
 
 config = configparser.ConfigParser()
@@ -65,6 +65,10 @@ class Receiver:
             ws.send(json.dumps(payload))
             with conn:
                 while not self.__stop_receiving_data.is_set():
+                    
+                    if not is_market_open:
+                        break
+                    
                     response = json.loads(ws.recv())
                     print(response)
                     if response['stream'] != 'listening':

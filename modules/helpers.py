@@ -36,5 +36,3 @@ def is_market_open():
     status = response.json()['is_open']
 
     return status
-
-
