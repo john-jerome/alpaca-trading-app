@@ -52,6 +52,7 @@ class Database:
             print(error)
         
         df = pd.DataFrame(rows, columns = colnames)
+
         return df
 
     @staticmethod
@@ -78,6 +79,15 @@ class Database:
         
         return df
         
+    @staticmethod
+    def get_all_symbols(conn):
+
+        sql_select_symbols = """SELECT * FROM alpaca.trading_list
+        WHERE exchange in ('Nasdaq Global Select', 'New York Stock Exchange', 'NYSE', 'NYSE Arca');"""
+
+        df = Database.select_data(conn, sql_select_symbols)
+
+        return df
 
     @staticmethod
     def insert_one_row(conn, row, table_name):
