@@ -14,7 +14,7 @@ class TradingBot():
         self.account = account
     
     def __start_trading(self):
-        db_conn = create_connection(db)
+        db_conn = Database.create_connection(db)
         with db_conn:
             while not self.__stop_trading.is_set():
                 for trade in self.strategy.get_symbols_to_trade():
