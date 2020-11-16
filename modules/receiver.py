@@ -58,10 +58,11 @@ class Receiver:
         conn = Database.create_connection(self.database_uri)
         ws, status = self.ws_authenticate()
         if status == 'authorized':
+            am_symbols = ["AM." + e for e in Database.get_all_symbols(conn)]
             payload = {
                         "action": "listen",
                         "data": {
-                            "streams": ["AM.AAPL", "AM.TSLA"]
+                            "streams": am_symbols
                             }
                         }
             ws.send(json.dumps(payload))
