@@ -56,7 +56,7 @@ class Receiver:
         ws, status = self.ws_authenticate()
         timeout = config.getint('alpaca-paper', 'websocket_timeout')
         ws.settimeout(timeout)
-        
+
         if status == 'authorized':
             am_symbols = ["AM." + e for e in Database.get_all_symbols(conn)]
             payload = {
@@ -70,7 +70,7 @@ class Receiver:
                 while not self.__stop_receiving_data.is_set():
                     try:
                         response = json.loads(ws.recv())
-                        print(response)
+                        print("Websocket: " + response['stream'])
                         if response['stream'] != 'listening':
                             row = (
                                 response['data']['ev'],
