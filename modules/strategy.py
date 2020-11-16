@@ -17,6 +17,7 @@ class Strategy:
         self.lookback_len = kwargs.get('lookback_len')
         self.stop_threshold = kwargs.get('stop_threshold')
         self.profit_margin = kwargs.get('profit_margin')
+        self.buy_threshold = kwargs.get('buy_threshold')
     
     def calculate_means(self, window_len, buffer_size, symbol):
         """Calculates moving averages for the symbol
@@ -77,12 +78,12 @@ class Strategy:
             
         return None
 
-    def buy_strategy_moving_average(self, window_len, lookback_len, buy_threshold):
+    def buy_strategy_moving_average(self, window_len, lookback_len, buy_threshold, profit_margin, stop_threshold):
         # do calculations for all symbol
         for symbol in Database.get_all_symbols(self.db_conn):
             # ignore symbol if there is already open buy
             try:
-                means = calculate_means(window_len, lookback_len + 1, symbol)
+                means = self.calculate_means(window_len, lookback_len + 1, symbol)
             # ignore symbol if means are not calculated yet
             except ValueError:
                 continue
@@ -91,17 +92,23 @@ class Strategy:
                 continue
             # check if momentum is changing to positive direction
             if means[-1] - means[0] >= buy_threshold*means[0]:
-                self.symbols_to_trade.append({'stock':symbol, 'trade_type': 'bracket'})
-        
+                order = {
+                'symbol': symbol, 
+                'side': 'buy', 
+                'type': 'market', 
+                'time_in_force': 'gtc', 
+                'limit_price': (1+profit_margin)*means[-1], 
+                'stop_price': (1-stop_threshold)*means[-1], 
+                'order_class': 'bracket'}
+                self.symbols_to_trade.append(order)
+            
         return None
 
     def get_symbols_to_trade(self):
         self.symbols_to_trade = []
         if self.buy_strategy == 'first_momentum' and self.sell_strategy == 'limit':
-            window_len = self.window_len
-            lookback_len = self.lookback_len
-            profit_margin = self.profit_margin
-            stop_threshold = self.stop_threshold
-            self.buy_strategy_first_momentum(window_len, lookback_len, profit_margin, stop_threshold)
+            self.buy_strategy_first_momentum(self.window_len, self.lookback_len, self.profit_margin, self.stop_threshold)
+        elif self.buy_strategy == 'moving_average' and self.sell_strategy == 'limit':
+            self.buy_strategy_moving_average(self.window_len, self.lookback_len, self.buy_threshold, self.profit_margin, self.stop_threshold)
         return self.symbols_to_trade
 

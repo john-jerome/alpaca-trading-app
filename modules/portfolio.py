@@ -13,9 +13,8 @@ config.read('config.ini')
 
 class Portfolio:
     # database -> Database class
-    def __init__(self, account_id, db_conn):
+    def __init__(self, account_id):
         self.account_id = account_id
-        self.db_conn = db_conn
     
     def generate_auth_headers(self):
         
@@ -65,18 +64,7 @@ class Portfolio:
         response = requests.request("POST", url, headers=self.generate_auth_headers(), data=payload)
         
         if response.status_code == 200:
-
             response_dict = response.json()
-
-            row = (
-                response_dict['id'],
-                response_dict['symbol'],
-                response_dict['status'],
-                response_dict['side'],
-                response_dict['qty']
-            )
-            
-            Database.insert_one_row(self.db_conn, row, table_name = 'alpaca.orders')
         
         return None
 

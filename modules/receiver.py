@@ -30,9 +30,6 @@ class Receiver:
 
     def stop(self):
         self.__stop_receiving_data.set()
-
-    def __write_to_db(self, db_conn):
-        pass
     
     def ws_authenticate(self):
 
