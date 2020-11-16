@@ -15,6 +15,8 @@ class Strategy:
         self.sell_strategy = sell_strategy
         self.window_len = kwargs.get('window_len')
         self.lookback_len = kwargs.get('lookback_len')
+        self.stop_threshold = kwargs.get('stop_threshold')
+        self.profit_margin = kwargs.get('profit_margin')
     
     def calculate_means(self, window_len, buffer_size, symbol):
         """Calculates moving averages for the symbol
@@ -29,7 +31,7 @@ class Strategy:
         Returns:
             means (np.array): moving averages for the symbol
         """
-        df = pd.DataFrame(columns=['User_ID', 'UserName', 'Action']) #get_last_N_prices(self.db_conn, symbol, window_len)
+        df = Database.get_last_n_prices(self.db_conn, symbol, window_len)
         # if not enough data for moving average calculation or wrong timestamps
         if len(df.index) < window_len:
             raise ValueError("Not suitable data for moving average calculation")
@@ -49,7 +51,7 @@ class Strategy:
 
         return np.asarray(self.means[symbol])
 
-    def buy_strategy_first_momentum(self, window_len, lookback_len):
+    def buy_strategy_first_momentum(self, window_len, lookback_len, profit_margin, stop_threshold):
         print("Started first momentum")
         # do calculations for all symbol
         for symbol in ['AAPL', 'TSLA']:
@@ -64,7 +66,14 @@ class Strategy:
             deltas_means = np.diff(means)
             # check if momentum is changing to positive direction
             if np.all(np.all(deltas_means[1:] > deltas_means[:-1])):
-                self.symbols_to_trade.append({'stock':symbol, 'trade_type': 'bracket'})
+                order = {'symbol':symbol, 
+                'side':'buy', 
+                'type':'market', 
+                'time_in_force':'ioc', 
+                'limit_price': (1+profit_margin)*means[-1], 
+                'stop_price': (1-stop_threshold)*means[-1], 
+                'order_class':'bracket'}
+                self.symbols_to_trade.append(order)
             
         return None
 
@@ -91,5 +100,7 @@ class Strategy:
         if self.buy_strategy == 'first_momentum' and self.sell_strategy == 'limit':
             window_len = self.window_len
             lookback_len = self.lookback_len
-            self.buy_strategy_first_momentum(window_len, lookback_len)
+            profit_margin = self.profit_margin
+            stop_threshold = self.stop_threshold
+            self.buy_strategy_first_momentum(window_len, lookback_len, profit_margin, stop_threshold)
         return self.symbols_to_trade 
