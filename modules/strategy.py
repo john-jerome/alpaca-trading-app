@@ -52,9 +52,8 @@ class Strategy:
         return np.asarray(self.means[symbol])
 
     def buy_strategy_first_momentum(self, window_len, lookback_len, profit_margin, stop_threshold):
-        print("Started first momentum")
         # do calculations for all symbol
-        for symbol in ['AAPL', 'TSLA']:
+        for symbol in Database.get_all_symbols(self.db_conn):
             try:
                 means = self.calculate_means(window_len, lookback_len + 1, symbol)
             # ignore symbol if means are not calculated yet
@@ -66,10 +65,11 @@ class Strategy:
             deltas_means = np.diff(means)
             # check if momentum is changing to positive direction
             if np.all(np.all(deltas_means[1:] > deltas_means[:-1])):
-                order = {'symbol':symbol, 
+                order = {
+                'symbol':symbol, 
                 'side':'buy', 
                 'type':'market', 
-                'time_in_force':'ioc', 
+                'time_in_force':'gtc', 
                 'limit_price': (1+profit_margin)*means[-1], 
                 'stop_price': (1-stop_threshold)*means[-1], 
                 'order_class':'bracket'}
@@ -79,7 +79,7 @@ class Strategy:
 
     def buy_strategy_moving_average(self, window_len, lookback_len, buy_threshold):
         # do calculations for all symbol
-        for symbol in ['AAPL', 'TSLA']:
+        for symbol in Database.get_all_symbols(self.db_conn):
             # ignore symbol if there is already open buy
             try:
                 means = calculate_means(window_len, lookback_len + 1, symbol)
