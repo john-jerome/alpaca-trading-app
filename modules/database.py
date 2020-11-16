@@ -46,11 +46,12 @@ class Database:
         try:
             cursor = conn.cursor()
             cursor.execute(select_query)
-            rows = cursor.fetchall()    
+            colnames = [desc[0] for desc in cursor.description]
+            rows = cursor.fetchall()
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
         
-        df = pd.DataFrame(rows)
+        df = pd.DataFrame(rows, columns = colnames)
         return df
 
     @staticmethod
