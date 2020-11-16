@@ -13,11 +13,11 @@ class TradingBot():
         self.strategy = strategy
         self.account = account
         self.period = period
-        self.stop_flag = False
+        self.__stop_trading = threading.Event()
     
-    def start(self):
-        print("Bot is started")
-        while not self.stop_flag:
+    def __start_trading(self):
+        print("Start trading...")
+        while not self.__stop_trading.is_set():
             for trade in self.strategy.get_symbols_to_trade():
                 if self.account.is_in_potfolio(trade['symbol']) or trade['symbol'] in self.account.get_open_orders('buy'):
                     continue
@@ -27,8 +27,10 @@ class TradingBot():
                     self.account.create_bracket_order(trade['symbol'], n_shares, trade['side'], trade['type'], trade['time_in_force'], trade['limit_price'], trade['stop_price'])
             time.sleep(self.period)
 
-        print("Stop trading ...")
+        print("Stop trading...")
         return None
-    
+    def start(self):
+        trading_thread = threading.Thread(target = self.__start_trading)
+        trading_thread.start()
     def stop(self):
-        self.stop_flag = True
+        self.__stop_trading.set()
