@@ -1,3 +1,4 @@
+import requests
 from datetime import datetime, timedelta
 
 def generate_ts(delay_minutes=0):
@@ -20,3 +21,20 @@ def ts_to_unix(ts):
     unix_date = datetime.timestamp(ts)
 
     return unix_date
+
+def is_market_open():
+    
+    url = "https://paper-api.alpaca.markets/v2/clock"
+
+    headers = {
+                'APCA-API-KEY-ID': 'PKXWA7LGA9LHVI6UT6RM',
+                'APCA-API-SECRET-KEY': 'UpcoULBZm9XrW3u7sR5676TcjxZbzrOf1PKcd31v'
+            }
+    
+    response = requests.request('GET', url, headers=headers)
+
+    status = response.json()['is_open']
+
+    return status
+
+
