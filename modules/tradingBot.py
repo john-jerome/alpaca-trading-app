@@ -8,32 +8,28 @@ from strategy import Strategy
 from database import Database
 
 class TradingBot():
-    def __init__(self, strategy, account):
+    def __init__(self, database_uri, strategy, account, period):
         self.__stop_trading = threading.Event()
         self.strategy = strategy
         self.account = account
+        self.database_uri = database_uri
+        self.period = period
     
     def __start_trading(self):
-        db_conn = Database.create_connection(db)
+        db_conn = Database.create_connection(self.database_uri)
         with db_conn:
             while not self.__stop_trading.is_set():
-                for trade in self.strategy.get_symbols_to_trade():
+                for trade in self.strategy.get_symbols_to_trade(db_conn):
                     account.create_bracket_order(trade)
-                time.sleep(self.strategy_buy['period'])
+                time.sleep(self.period)
 
         close_connection(db_conn)
-        print("Stop buying stocks...")
+        print("Stop trading ...")
         return None
 
     def start(self):
-        buy_thread = threading.Thread(target = self.__start_buying)
-        if 'algorithm' in self.strategy_sell and self.strategy_sell['algorithm'] != 'no_algo':
-            sell_thread = threading.Thread(target = self.__start_selling)
-        
-        self.__start_receiving_data()
-        self.__start_verifying_orders()
-        buy_thread.start()
-        sell_thread.start()
+        trading_thread = threading.Thread(target = self.__start_trading)        
+        trading_thread.start()
     
     def stop(self):
         self.__stop_trading.set()
