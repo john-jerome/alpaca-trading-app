@@ -7,6 +7,7 @@ import json
 sys.path.insert(0,'modules')
 
 from database import Database
+from telegramBot import send_message
 
 config = configparser.ConfigParser()
 config.read('config.ini')
