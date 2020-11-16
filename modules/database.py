@@ -91,7 +91,7 @@ class Database:
 
         df = Database.select_data(conn, sql_select_symbols)
 
-        return df
+        return df['symbol'].tolist()
 
     @staticmethod
     def insert_one_row(conn, row, table_name):
