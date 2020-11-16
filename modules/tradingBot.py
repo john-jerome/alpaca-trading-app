@@ -6,6 +6,7 @@ import sys
 sys.path.insert(0,'modules')
 from strategy import Strategy
 from database import Database
+from portfolio import Portfolio
 
 class TradingBot():
     def __init__(self, strategy, account, period):
@@ -15,9 +16,11 @@ class TradingBot():
         self.stop_flag = False
     
     def start(self):
+        print("Bot is started")
         while not self.stop_flag:
-            print("Bot is started")
             for trade in self.strategy.get_symbols_to_trade():
+                if self.account.is_in_potfolio(trade['symbol']):
+                    continue
                 if trade['order_class'] == 'bracket':
                     n_shares = math.floor(buy_amount/trade['limit_price'])
                     print("Creating a bracket order...")
