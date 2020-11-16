@@ -65,28 +65,26 @@ class Receiver:
             ws.send(json.dumps(payload))
             with conn:
                 while not self.__stop_receiving_data.is_set():
-                    
-                    if not is_market_open:
+                    try:
+                        response = json.loads(ws.recv())
+                        print(response)
+                        if response['stream'] != 'listening':
+                            row = (
+                                response['data']['ev'],
+                                response['data']['T'],
+                                response['data']['v'],
+                                response['data']['av'],
+                                response['data']['op'],
+                                response['data']['vw'],
+                                response['data']['o'],
+                                response['data']['h'],
+                                response['data']['l'],
+                                response['data']['c'],
+                                response['data']['a'],
+                                unix_to_ts(response['data']['s'] / 1000.0),
+                                unix_to_ts(response['data']['e'] / 1000.0)
+                            )
+                            Database.insert_one_row(conn, row, table_name = 'alpaca.prices_bars')
+                    except Exception as e:
+                        print("Websocket error:", e)
                         break
-                    
-                    response = json.loads(ws.recv())
-                    print(response)
-                    if response['stream'] != 'listening':
-
-                        row = (
-                            response['data']['ev'],
-                            response['data']['T'],
-                            response['data']['v'],
-                            response['data']['av'],
-                            response['data']['op'],
-                            response['data']['vw'],
-                            response['data']['o'],
-                            response['data']['h'],
-                            response['data']['l'],
-                            response['data']['c'],
-                            response['data']['a'],
-                            unix_to_ts(response['data']['s'] / 1000.0),
-                            unix_to_ts(response['data']['e'] / 1000.0)
-                        )
-
-                        Database.insert_one_row(conn, row, table_name = 'alpaca.prices_bars')
