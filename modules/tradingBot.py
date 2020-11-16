@@ -19,7 +19,7 @@ class TradingBot():
         print("Bot is started")
         while not self.stop_flag:
             for trade in self.strategy.get_symbols_to_trade():
-                if self.account.is_in_potfolio(trade['symbol']):
+                if self.account.is_in_potfolio(trade['symbol']) or trade['symbol'] in self.account.get_open_orders('buy'):
                     continue
                 if trade['order_class'] == 'bracket':
                     n_shares = math.floor(buy_amount/trade['limit_price'])
