@@ -81,7 +81,6 @@ class Portfolio:
         return None
 
     def create_bracket_order(self, symbol, quantity, side, type, time_in_force, limit_price, stop_price, order_class = 'bracket'):
-        
         url = "https://paper-api.alpaca.markets/v2/orders"
 
         payload = {}
@@ -96,12 +95,10 @@ class Portfolio:
         payload['stop_loss'] = {}
         payload['stop_loss']['stop_price'] = stop_price
 
-        print(payload)
-
         response = requests.request("POST", url, headers=self.generate_auth_headers(), data=json.dumps(payload))
-        
+        print("Order status:", response.status_code)
         # insert all orders into orders table 
-        return response.status_code, response.text
+        return None
 
     def get_current_portfolio(self):
         """[summary]
