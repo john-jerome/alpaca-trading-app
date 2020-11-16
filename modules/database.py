@@ -85,7 +85,7 @@ class Database:
     def get_all_symbols(conn):
 
         sql_select_symbols = """
-        SELECT DISTINCT symbol
+        SELECT DISTINCT replace(symbol, '-', '.') as symbol
         FROM alpaca.trading_list
         WHERE exchange in ('Nasdaq Global Select', 'New York Stock Exchange', 'NYSE', 'NYSE Arca');"""
 
