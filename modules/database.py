@@ -67,7 +67,7 @@ class Database:
         """
 
         l = len(row)
-        values = '?'+',?'*(l-1)
+        values = '%s'+',%s'*(l-1)
         sql = """ INSERT INTO {}
                 VALUES({}) """.format(table_name, str(values))
 
