@@ -3,6 +3,11 @@ import time
 import configparser
 import websocket
 import json
+import sys
+
+sys.path.insert(0,'modules')
+
+from helpers import unix_to_ts
 from database import Database
 
 config = configparser.ConfigParser()
@@ -14,14 +19,13 @@ APCA_API_SECRET_KEY = config['alpaca-paper']['APCA_API_SECRET_KEY']
 
 class Receiver:
 
-    def __init__(self, websocket_url, database_uri, period):
+    def __init__(self, websocket_url, database_uri):
         self.__stop_receiving_data = threading.Event()
         self.websocket_url = websocket_url
         self.database_uri = database_uri
-        self.__period = period
 
     def start(self):
-        receive_data_thread = threading.Thread(target = self.__receive_data, args=(self.__stop_receiving_data, ))
+        receive_data_thread = threading.Thread(target = self.__receive_data, args=(self.__stop_receiving_data, 0,))
         receive_data_thread.start()
 
     def stop(self):
@@ -47,25 +51,40 @@ class Receiver:
 
         status = response['data']['status']
 
-        return status
+        return ws, status
 
     def __receive_data(self, stop_event, symbol_list):
 
         conn = Database.create_connection(self.database_uri)
-        ws = self.ws_authenticate()
-        with conn:
-            while not self.__stop_receiving_data.is_set():
-                payload = {
-                    "action": "listen",
-                    "data": {
-                        "streams": ["AM.SPY"]
+        ws, status = self.ws_authenticate()
+        if status == 'authorized':
+            payload = {
+                        "action": "listen",
+                        "data": {
+                            "streams": ["AM.AAPL", "AM.TSLA"]
+                            }
                         }
-                    }
-                ws.send(json.dumps(payload))
-                response = json.loads(ws.recv())
+            ws.send(json.dumps(payload))
+            with conn:
+                while not self.__stop_receiving_data.is_set():
+                    response = json.loads(ws.recv())
+                    print(response)
+                    if response['stream'] != 'listening':
 
-                row = (
+                        row = (
+                            response['data']['ev'],
+                            response['data']['T'],
+                            response['data']['v'],
+                            response['data']['av'],
+                            response['data']['op'],
+                            response['data']['vw'],
+                            response['data']['o'],
+                            response['data']['h'],
+                            response['data']['l'],
+                            response['data']['c'],
+                            response['data']['a'],
+                            unix_to_ts(response['data']['s'] / 1000.0),
+                            unix_to_ts(response['data']['e'] / 1000.0)
+                        )
 
-                )
-
-                Database.insert_one_row(conn, row, table_name = 'alpaca.prices_bars')
+                        Database.insert_one_row(conn, row, table_name = 'alpaca.prices_bars')

@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 
-
 def generate_ts(delay_minutes=0):
     """Generate current UTC timestamp."""
 

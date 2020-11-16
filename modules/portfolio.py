@@ -121,7 +121,6 @@ class Portfolio:
 
         return positions
 
-
     def is_in_potfolio(self, symbol):
         """Check if an instrument is already in the portfolio.
 
@@ -145,11 +144,11 @@ class Portfolio:
             [type]: [description]
         """
 
-        url = "https://paper-api.alpaca.markets/v2/orders"
+        url = "https://paper-api.alpaca.markets/v2/orders?status=open"
         payload = {}
         payload['status'] = 'closed'
 
-        response = requests.request("GET", url, headers=self.generate_auth_headers(), data=payload)
+        response = requests.request("GET", url, headers=self.generate_auth_headers(), params = json.dumps(payload))
         
         if response.status_code == 200:
             orders = response.json()
@@ -158,4 +157,4 @@ class Portfolio:
 
         symbols = [order['symbol'] for order in orders if order['side'] == side]
         
-        return symbols
+        return list(set(symbols))
