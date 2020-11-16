@@ -15,11 +15,11 @@ config.read('config.ini')
 
 db = config['database']['database_uri']
 db_conn = Database.create_connection(db)
-st = Strategy(db_conn, 'moving_average', 'limit', window_len = 5, lookback_len = 7, buy_threshold = 0.01, profit_margin = 0.05, stop_threshold = 0.05)
-acc = Portfolio('ua')
+move_av = Strategy(db_conn, 'moving_average', 'limit', window_len = 5, lookback_len = 7, buy_threshold = 0.01, profit_margin = 0.05, stop_threshold = 0.05)
+account = Portfolio('ua')
 
 rec = Receiver('wss://data.alpaca.markets/stream', db)
-bot = TradingBot(db, st, acc, 30)
+bot = TradingBot(move_av, account, period = 30)
 
 rec.start()
 bot.start()

@@ -8,11 +8,9 @@ from strategy import Strategy
 from database import Database
 
 class TradingBot():
-    def __init__(self, database_uri, strategy, account, period):
-        self.__stop_trading = threading.Event()
+    def __init__(self, strategy, account, period):
         self.strategy = strategy
         self.account = account
-        self.database_uri = database_uri
         self.period = period
         self.stop_flag = False
     
