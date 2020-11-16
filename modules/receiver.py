@@ -54,6 +54,9 @@ class Receiver:
 
         conn = Database.create_connection(self.database_uri)
         ws, status = self.ws_authenticate()
+        timeout = config.getint('alpaca-paper', 'websocket_timeout')
+        ws.settimeout(timeout)
+        
         if status == 'authorized':
             am_symbols = ["AM." + e for e in Database.get_all_symbols(conn)]
             payload = {
