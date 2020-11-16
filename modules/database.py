@@ -68,7 +68,9 @@ class Database:
             pandas DataFrame: resulting dataframe
         """
 
-        sql_select_last_N = """SELECT * FROM alpaca.prices_bars
+        sql_select_last_N = """
+        SELECT * 
+        FROM alpaca.prices_bars
         WHERE symbol = '{}'
         ORDER BY window_end DESC 
         LIMIT {} ;""".format(symbol, N)
@@ -82,7 +84,9 @@ class Database:
     @staticmethod
     def get_all_symbols(conn):
 
-        sql_select_symbols = """SELECT * FROM alpaca.trading_list
+        sql_select_symbols = """
+        SELECT DISTINCT symbols 
+        FROM alpaca.trading_list
         WHERE exchange in ('Nasdaq Global Select', 'New York Stock Exchange', 'NYSE', 'NYSE Arca');"""
 
         df = Database.select_data(conn, sql_select_symbols)
