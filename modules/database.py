@@ -54,6 +54,32 @@ class Database:
         return df
 
     @staticmethod
+    def get_last_n_prices(conn, symbol, N):
+        """Create a df containing last N prices for a specific isin.
+
+        Args:
+            conn: db connection object
+            symbol (string): symbol of a stock
+            N (int): number of prices to query
+
+        Returns:
+            pandas DataFrame: resulting dataframe
+        """
+
+        sql_select_last_N = """SELECT * FROM alpaca.prices_bars
+        WHERE symbol = '{}'
+        ORDER BY window_end DESC 
+        LIMIT {} ;""".format(symbol, N)
+
+        result = Database.select_data(conn, sql_select_last_N)
+        df = pd.DataFrame(result)
+        df['window_start'] = pd.to_datetime(df['window_start'], format="%Y-%m-%d %H:%M:%S")
+        df['window_end'] = pd.to_datetime(df['window_end'], format="%Y-%m-%d %H:%M:%S")
+        
+        return df
+        
+
+    @staticmethod
     def insert_one_row(conn, row, table_name):
         """[summary]
 
