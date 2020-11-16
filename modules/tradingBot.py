@@ -14,25 +14,20 @@ class TradingBot():
         self.account = account
         self.database_uri = database_uri
         self.period = period
+        self.stop_flag = False
     
-    def __start_trading(self):
-        db_conn = Database.create_connection(self.database_uri)
-        with db_conn:
-            while not self.__stop_trading.is_set():
-                for trade in self.strategy.get_symbols_to_trade(db_conn):
-                    account.create_bracket_order(trade)
-                time.sleep(self.period)
+    def start(self):
+        while not self.stop_flag:
+            for trade in self.strategy.get_symbols_to_trade():
+                if trade['order_class'] == 'bracket':
+                    self.account.create_bracket_order(trade['symbol'], 1, trade['side'], trade['type'], trade['time_in_force'], trade['limit_price'], trade['stop_price'])
+            time.sleep(self.period)
 
-        close_connection(db_conn)
         print("Stop trading ...")
         return None
-
-    def start(self):
-        trading_thread = threading.Thread(target = self.__start_trading)        
-        trading_thread.start()
     
     def stop(self):
-        self.__stop_trading.set()
+        self.stop_flag = True
     
     def buy_shares(db_conn, symbol, buy_amount, minutes_valid):
         print("Executing an order... buy symbol:", symbol)
