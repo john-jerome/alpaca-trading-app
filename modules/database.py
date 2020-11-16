@@ -73,8 +73,8 @@ class Database:
 
         result = Database.select_data(conn, sql_select_last_N)
         df = pd.DataFrame(result)
-        df['window_start'] = pd.to_datetime(df['window_start'], format="%Y-%m-%d %H:%M:%S")
-        df['window_end'] = pd.to_datetime(df['window_end'], format="%Y-%m-%d %H:%M:%S")
+        #df['window_start'] = pd.to_datetime(df['window_start'], format="%Y-%m-%d %H:%M:%S")
+        #df['window_end'] = pd.to_datetime(df['window_end'], format="%Y-%m-%d %H:%M:%S")
         
         return df
         
