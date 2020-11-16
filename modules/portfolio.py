@@ -100,7 +100,6 @@ class Portfolio:
 
         response = requests.request("POST", url, headers=self.generate_auth_headers(), data=json.dumps(payload))
         
-        # insert all orders into orders table 
         return response.status_code, response.text
 
     def get_current_portfolio(self):
