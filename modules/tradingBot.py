@@ -2,11 +2,16 @@ import threading
 import time
 import configparser
 import sys
+import math
 
 sys.path.insert(0,'modules')
+
 from strategy import Strategy
 from database import Database
 from portfolio import Portfolio
+
+config = configparser.ConfigParser()
+config.read('config.ini')
 
 class TradingBot():
     def __init__(self, strategy, account, period):
@@ -22,9 +27,15 @@ class TradingBot():
                 if self.account.is_in_potfolio(trade['symbol']) or trade['symbol'] in self.account.get_open_orders('buy'):
                     continue
                 if trade['order_class'] == 'bracket':
+                    buy_amount = config['algo_params']['buy_amount']
                     n_shares = math.floor(buy_amount/trade['limit_price'])
                     print("Creating a bracket order...")
-                    self.account.create_bracket_order(trade['symbol'], n_shares, trade['side'], trade['type'], trade['time_in_force'], trade['limit_price'], trade['stop_price'])
+                    self.account.create_bracket_order(
+                        trade['symbol'], n_shares, trade['side'], 
+                        trade['type'], trade['time_in_force'], 
+                        take_profit_limit_price=trade['limit_price'], 
+                        stop_loss_stop_price=trade['stop_price']
+                        )
             time.sleep(self.period)
 
         print("Stop trading...")
