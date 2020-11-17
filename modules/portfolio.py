@@ -2,6 +2,7 @@ import pandas as pd
 import requests
 import sys
 import json
+import os
 
 sys.path.insert(0,'modules')
 
@@ -17,13 +18,13 @@ class Portfolio:
         
         if self.account_id == 'ua':
             headers = {
-                'APCA-API-KEY-ID': 'PKXWA7LGA9LHVI6UT6RM',
-                'APCA-API-SECRET-KEY': 'UpcoULBZm9XrW3u7sR5676TcjxZbzrOf1PKcd31v'
+                'APCA-API-KEY-ID': os.environ['APCA_API_KEY_ID'],
+                'APCA-API-SECRET-KEY': os.environ['APCA_API_SECRET_KEY']
             }
         elif self.account_id == 'kz':
             headers = {
-                'APCA-API-KEY-ID': 'PKXWA7LGA9LHVI6UT6RM',
-                'APCA-API-SECRET-KEY': 'UpcoULBZm9XrW3u7sR5676TcjxZbzrOf1PKcd31v'
+                'APCA-API-KEY-ID': '',
+                'APCA-API-SECRET-KEY': ''
             }
         
         return headers
@@ -47,7 +48,7 @@ class Portfolio:
         if stop_price is not None:    
             payload['stop_price'] = stop_price
 
-        response = requests.request(
+        requests.request(
             "POST", url, 
             headers=self.generate_auth_headers(), data=payload
             )

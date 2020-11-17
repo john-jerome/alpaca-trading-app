@@ -9,7 +9,7 @@ sys.path.insert(0,'modules')
 
 config = configparser.ConfigParser()
 config.read('config.ini') 
-database_uri = config['database']['database_uri']
+database_uri = os.environ['DATABASE_URL']
 
 class Database:
     
