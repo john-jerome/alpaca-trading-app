@@ -4,6 +4,7 @@ import configparser
 import websocket
 import json
 import sys
+import os
 
 sys.path.insert(0,'modules')
 
@@ -12,9 +13,6 @@ from database import Database
 
 config = configparser.ConfigParser()
 config.read('config.ini')
-
-APCA_API_KEY_ID = config['alpaca-paper']['APCA_API_KEY_ID']
-APCA_API_SECRET_KEY = config['alpaca-paper']['APCA_API_SECRET_KEY']
 
 class Receiver:
 
@@ -35,8 +33,8 @@ class Receiver:
         auth_payload = {
             "action": "authenticate",
             "data": {
-                "key_id": APCA_API_KEY_ID,
-                "secret_key": APCA_API_SECRET_KEY
+                "key_id": os.environ['APCA_API_KEY_ID'],
+                "secret_key": os.environ['APCA_API_SECRET_KEY']
                 }
             }
 
