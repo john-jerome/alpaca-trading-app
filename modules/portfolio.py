@@ -1,5 +1,4 @@
 import pandas as pd
-import configparser
 import requests
 import sys
 import json
@@ -7,10 +6,7 @@ import json
 sys.path.insert(0,'modules')
 
 from database import Database
-from telegramBot import send_message
-
-config = configparser.ConfigParser()
-config.read('config.ini')
+from telegramBot import send_order_message
 
 class Portfolio:
     # database -> Database class
@@ -32,23 +28,12 @@ class Portfolio:
         
         return headers
 
-    def create_simple_order(self, symbol, quantity, side, type, time_in_force, limit_price = None, stop_price = None):
-        """[summary]
+    def create_simple_order(
+        self, symbol, quantity, side, 
+        type, time_in_force, 
+        limit_price = None, stop_price = None
+        ):
 
-        Args:
-            symbol ([type]): [description]
-            quantity ([type]): [description]
-            side ([type]): [description]
-            type ([type]): [description]
-            time_in_force ([type]): [description]
-            limit_price ([type], optional): [description]. Defaults to None.
-            stop_price ([type], optional): [description]. Defaults to None.
-
-        Returns:
-            [type]: [description]
-        """
-        # won't be used for now - add row selection later
-        #time in force: https://alpaca.markets/docs/trading-on-alpaca/orders/#time-in-force
         url = "https://paper-api.alpaca.markets/v2/orders"
 
         payload = {}
@@ -62,14 +47,29 @@ class Portfolio:
         if stop_price is not None:    
             payload['stop_price'] = stop_price
 
-        response = requests.request("POST", url, headers=self.generate_auth_headers(), data=payload)
+        response = requests.request(
+            "POST", url, 
+            headers=self.generate_auth_headers(), data=payload
+            )
         
-        if response.status_code == 200:
-            response_dict = response.json()
-        
+        status = response.status_code
+        print("Order status:", status)
+
+        if status == 200:
+            send_order_message(
+                self.account_id, action='create', 
+                order_class='bracket', symbol=symbol, 
+                order_type=type
+                )
         return None
 
-    def create_bracket_order(self, symbol, quantity, side, type, time_in_force, limit_price, stop_price, order_class = 'bracket'):
+    def create_bracket_order(
+        self, symbol, quantity, side, 
+        type, time_in_force, limit_price = None, 
+        stop_price = None, order_class = 'bracket', 
+        take_profit_limit_price = None,
+        stop_loss_stop_price = None):
+
         url = "https://paper-api.alpaca.markets/v2/orders"
 
         payload = {}
@@ -78,13 +78,24 @@ class Portfolio:
         payload['side'] = side
         payload['type'] = type
         payload['time_in_force'] = time_in_force
-        payload['order_class'] = order_class
-        payload['take_profit'] = {}
-        payload['take_profit']['limit_price'] = limit_price
-        payload['stop_loss'] = {}
-        payload['stop_loss']['stop_price'] = stop_price
 
-        response = requests.request("POST", url, headers=self.generate_auth_headers(), data=json.dumps(payload))
+        if type in ['limit', 'stop_limit']:
+            payload['limit_price'] = limit_price
+        if type in ['stop', 'stop_limit']:
+            payload['stop_price'] = stop_price
+
+        payload['order_class'] = order_class
+
+        # Additional parameters for bracket orders 
+        payload['take_profit'] = {}
+        payload['take_profit']['limit_price'] = take_profit_limit_price
+        payload['stop_loss'] = {}
+        payload['stop_loss']['stop_price'] = stop_loss_stop_price
+
+        response = requests.request(
+            "POST", url, headers=self.generate_auth_headers(), 
+            data=json.dumps(payload)
+            )
         print("Order status:", response.status_code)
         
         return None
