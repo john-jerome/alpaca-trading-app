@@ -21,7 +21,7 @@ class TradingBot():
         self.__stop_trading = threading.Event()
     
     def __start_trading(self):
-        print("Start trading...")
+        print('Started', self.account.account_id, 'trader bot')
         while not self.__stop_trading.is_set():
             for trade in self.strategy.get_symbols_to_trade():
                 if self.account.is_in_potfolio(trade['symbol']) or trade['symbol'] in self.account.get_open_orders('buy'):
@@ -38,7 +38,7 @@ class TradingBot():
                         )
             time.sleep(self.period)
 
-        print("Stop trading...")
+        print('Stopped', self.account.account_id, 'trader bot')
         return None
     def start(self):
         trading_thread = threading.Thread(target = self.__start_trading)
