@@ -22,16 +22,15 @@ class Receiver:
         self.__stop_receiving_data = threading.Event()
         self.websocket_url = websocket_url
         self.database_uri = database_uri
-        self.db_conn = 0
 
     def start(self):
-        receive_data_thread = threading.Thread(target = self.__receive_data, args=(self.__stop_receiving_data, 0,))
+        receive_data_thread = threading.Thread(target = self.__receive_data, args=(self.__stop_receiving_data,))
         receive_data_thread.start()
 
     def stop(self):
         self.__stop_receiving_data.set()
     
-    def on_open(self, ws, conn):
+    def on_open(self, ws):
 
         auth_payload = {
             "action": "authenticate",
@@ -77,14 +76,15 @@ class Receiver:
     def on_close(self, ws):
         print("closed connection")
 
-    def __receive_data(self):
+    def __receive_data(self, stop_event):
 
-        websocket.enableTrace(True)
         self.db_conn = Database.create_connection(self.database_uri)
-        while not self.__stop_receiving_data:
-            ws = websocket.WebSocketApp(
-                self.websocket_url, on_open=self.on_open, 
-                on_message=self.on_message, on_close=self.on_close
+        while not stop_event.is_set():
+            self.ws = websocket.WebSocketApp(
+                self.websocket_url, 
+                on_open=lambda ws: self.on_open(ws), 
+                on_message=lambda ws,message: self.on_message(ws, message), 
+                on_close=lambda ws: self.on_close(ws)
                 )
-            ws.run_forever()
+            self.ws.run_forever()
 
