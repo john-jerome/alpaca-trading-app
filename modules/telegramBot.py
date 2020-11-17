@@ -19,11 +19,11 @@ def send_state(action):
     """
     message = ""
     if action == "started":
-        message = "Program started"
+        message = "Alpaca: Program started"
     elif action == "stopped":
-        message = "Program stopped unexpectedly"
+        message = "Alpaca: Program stopped unexpectedly"
     elif action == "manually stopped":
-        message = "Program stopped manually"
+        message = "Alpaca: Program stopped manually"
 
     params = {
         'chat_id': chat_id, 

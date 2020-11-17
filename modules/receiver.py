@@ -54,27 +54,31 @@ class Receiver:
 
     def on_message(self, ws, message):
 
-        print("received a message")
-        if 'AM' in message['stream']:
+        msg = json.loads(message)
+        if 'AM' in msg['stream']:
             row = (
-                message['data']['ev'],
-                message['data']['T'],
-                message['data']['v'],
-                message['data']['av'],
-                message['data']['op'],
-                message['data']['vw'],
-                message['data']['o'],
-                message['data']['h'],
-                message['data']['l'],
-                message['data']['c'],
-                message['data']['a'],
-                unix_to_ts(message['data']['s'] / 1000.0),
-                unix_to_ts(message['data']['e'] / 1000.0)
+                msg['data']['ev'],
+                msg['data']['T'],
+                msg['data']['v'],
+                msg['data']['av'],
+                msg['data']['op'],
+                msg['data']['vw'],
+                msg['data']['o'],
+                msg['data']['h'],
+                msg['data']['l'],
+                msg['data']['c'],
+                msg['data']['a'],
+                unix_to_ts(msg['data']['s'] / 1000.0),
+                unix_to_ts(msg['data']['e'] / 1000.0)
                 )
             Database.insert_one_row(self.db_conn, row, table_name = 'alpaca.prices_bars')
             
     def on_close(self, ws):
         print("closed connection")
+
+    def on_error(self, error):
+        print(error)
+        return error
 
     def __receive_data(self, stop_event):
 
@@ -84,7 +88,8 @@ class Receiver:
                 self.websocket_url, 
                 on_open=lambda ws: self.on_open(ws), 
                 on_message=lambda ws,message: self.on_message(ws, message), 
-                on_close=lambda ws: self.on_close(ws)
+                on_close=lambda ws: self.on_close(ws),
+                on_error= lambda ws,error: self.on_error(ws, error),
                 )
             self.ws.run_forever()
 
