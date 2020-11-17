@@ -19,11 +19,11 @@ def send_state(action):
     """
     message = ""
     if action == "started":
-        message = "Alpaca: Program started"
+        message = "<b>Alpaca</b>: Program started"
     elif action == "stopped":
-        message = "Alpaca: Program stopped unexpectedly"
+        message = "<b>Alpaca</b>: Program stopped unexpectedly"
     elif action == "manually stopped":
-        message = "Alpaca: Program stopped manually"
+        message = "<b>Alpaca</b>: Program stopped manually"
 
     params = {
         'chat_id': chat_id, 
@@ -42,7 +42,7 @@ def send_order_message(
     ):
 
     if order_class == 'bracket':
-        message = "<b>{}:</b> We have created a <b>{} {}</b> order for <b>{}</b>".format(account.upper(), order_type, order_class, symbol)
+        message = "<b>Alpaca</b> <b>{}:</b> We have created a <b>{} {}</b> order for <b>{}</b>".format(account.upper(), order_type, order_class, symbol)
     
     params = {
         'chat_id': chat_id, 

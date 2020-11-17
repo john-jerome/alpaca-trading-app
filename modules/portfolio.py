@@ -52,15 +52,6 @@ class Portfolio:
             headers=self.generate_auth_headers(), data=payload
             )
         
-        status = response.status_code
-        print("Order status:", status)
-
-        if status == 200:
-            send_order_message(
-                self.account_id, action='create', 
-                order_class='bracket', symbol=symbol, 
-                order_type=type
-                )
         return None
 
     def create_bracket_order(
@@ -96,7 +87,16 @@ class Portfolio:
             "POST", url, headers=self.generate_auth_headers(), 
             data=json.dumps(payload)
             )
-        print("Order status:", response.status_code)
+
+        status = response.status_code
+        print("Order status:", status)
+
+        if status == 200:
+            send_order_message(
+                self.account_id, action='create', 
+                order_class='bracket', symbol=symbol, 
+                order_type=type
+                )
         
         return None
 
