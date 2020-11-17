@@ -1,8 +1,10 @@
 import configparser
 import sys
 import threading
+import os
 
 sys.path.insert(0,'modules')
+
 from telegramBot import send_state
 from strategy import Strategy
 from tradingBot import TradingBot
@@ -13,7 +15,7 @@ from receiver import Receiver
 config = configparser.ConfigParser()
 config.read('config.ini')
 
-db = config['database']['database_uri']
+db = os.environ['DATABASE_URL']
 db_conn = Database.create_connection(db)
 move_av = Strategy(db_conn, 'moving_average', 'limit', window_len = 5, lookback_len = 7, buy_threshold = 0.01, profit_margin = 0.05, stop_threshold = 0.05)
 account = Portfolio('ua')

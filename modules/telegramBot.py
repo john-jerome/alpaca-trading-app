@@ -1,12 +1,13 @@
 import configparser
 import requests
+import os
 
 config = configparser.ConfigParser()
 config.read('config.ini')
 
 chat_id = config['telegram_bot']['chat_id']
 
-api_key = config['telegram_bot']['api_token']
+api_key = os.environ['TELEGRAM_API_TOKEN']
 endpoint = config['telegram_bot']['endpoint']
 
 url = "{}{}/sendMessage".format(endpoint, api_key)
