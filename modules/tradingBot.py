@@ -27,7 +27,7 @@ class TradingBot():
                 if self.account.is_in_potfolio(trade['symbol']) or trade['symbol'] in self.account.get_open_orders('buy'):
                     continue
                 if trade['order_class'] == 'bracket':
-                    buy_amount = config['algo_params']['buy_amount']
+                    buy_amount = config.getint('algo_params', 'buy_amount')
                     n_shares = math.floor(buy_amount/trade['limit_price'])
                     print("Creating a bracket order...")
                     self.account.create_bracket_order(
