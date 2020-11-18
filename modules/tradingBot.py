@@ -9,6 +9,7 @@ sys.path.insert(0,'modules')
 from strategy import Strategy
 from database import Database
 from portfolio import Portfolio
+from helpers import is_market_open
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -22,7 +23,7 @@ class TradingBot():
     
     def __start_trading(self):
         print('Started', self.account.account_id, 'trader bot')
-        while not self.__stop_trading.is_set():
+        while is_market_open() and (not self.__stop_trading.is_set()):
             for trade in self.strategy.get_symbols_to_trade():
                 if self.account.is_in_potfolio(trade['symbol']) or trade['symbol'] in self.account.get_open_orders('buy'):
                     continue

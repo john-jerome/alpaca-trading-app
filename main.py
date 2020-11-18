@@ -20,6 +20,7 @@ db_conn = Database.create_connection(db)
 move_av = Strategy(db_conn, 'moving_average', 'limit', window_len = 5, lookback_len = 7, buy_threshold = 0.01, profit_margin = 0.05, stop_threshold = 0.05)
 account = Portfolio('ua')
 
+
 dataReceiver = Receiver("wss://data.alpaca.markets/stream", db)
 traderBot = TradingBot(move_av, account, period = 60)
 
