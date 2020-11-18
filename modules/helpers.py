@@ -1,4 +1,5 @@
 import requests
+import os
 from datetime import datetime, timedelta
 
 def generate_ts(delay_minutes=0):
@@ -27,8 +28,8 @@ def is_market_open():
     url = "https://paper-api.alpaca.markets/v2/clock"
 
     headers = {
-                'APCA-API-KEY-ID': 'PKXWA7LGA9LHVI6UT6RM',
-                'APCA-API-SECRET-KEY': 'UpcoULBZm9XrW3u7sR5676TcjxZbzrOf1PKcd31v'
+                'APCA-API-KEY-ID': os.environ['APCA_API_KEY_ID'],
+                'APCA-API-SECRET-KEY': os.environ['APCA_API_SECRET_KEY']
             }
     
     response = requests.request('GET', url, headers=headers)
@@ -36,3 +37,34 @@ def is_market_open():
     status = response.json()['is_open']
 
     return status
+
+def next_market_open():
+
+    url = "https://paper-api.alpaca.markets/v2/clock"
+
+    headers = {
+                'APCA-API-KEY-ID': os.environ['APCA_API_KEY_ID'],
+                'APCA-API-SECRET-KEY': os.environ['APCA_API_SECRET_KEY']
+            }
+    
+    response = requests.request('GET', url, headers=headers)
+
+    next_open = response.json()['next_open']
+
+    return next_open
+
+def next_market_close():
+
+    url = "https://paper-api.alpaca.markets/v2/clock"
+
+    headers = {
+                'APCA-API-KEY-ID': os.environ['APCA_API_KEY_ID'],
+                'APCA-API-SECRET-KEY': os.environ['APCA_API_SECRET_KEY']
+            }
+    
+    response = requests.request('GET', url, headers=headers)
+
+    next_close = response.json()['next_close']
+
+    return next_close
+
