@@ -70,7 +70,12 @@ def next_market_close():
 
 def is_data_fresh(df, accepted_lag_mins):
 
-    end = df['window_end'][-1]
-
-    return True if end > generate_ts(-1*accepted_lag_mins) else False
+    if df.empty:
+        status = False
+    else:
+        end = df['window_end'][-1]
+        print(end)
+        status = True if end > generate_ts(-1*accepted_lag_mins) else False
+        print(generate_ts(-1*accepted_lag_mins))
+    return status
 

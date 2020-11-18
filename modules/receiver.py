@@ -1,6 +1,5 @@
 import threading
 import time
-import configparser
 import websocket
 import json
 import sys
@@ -10,9 +9,6 @@ sys.path.insert(0,'modules')
 
 from helpers import unix_to_ts, is_market_open, generate_ts
 from database import Database
-
-config = configparser.ConfigParser()
-config.read('config.ini')
 
 class Receiver:
 
@@ -91,6 +87,4 @@ class Receiver:
                 )
             self.ws.run_forever()
     
-    def __order_updates(self, stop_event):
-        pass
 
