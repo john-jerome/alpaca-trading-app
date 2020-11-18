@@ -68,7 +68,7 @@ class Receiver:
                 msg['data']['a'],
                 unix_to_ts(msg['data']['s'] / 1000.0),
                 unix_to_ts(msg['data']['e'] / 1000.0),
-                generate_ts
+                generate_ts()
                 )
             Database.insert_one_row(self.db_conn, row, table_name = 'alpaca.prices_bars')
             
