@@ -1,5 +1,6 @@
 import requests
 import os
+import pandas as pd
 from datetime import datetime, timedelta
 
 def generate_ts(delay_minutes=0):
@@ -73,7 +74,7 @@ def is_data_fresh(df, accepted_lag_mins):
     if df.empty:
         status = False
     else:
-        end = df['window_end'][-1]
+        end = df['window_end'].iloc[-1]
         print(end)
         status = True if end > generate_ts(-1*accepted_lag_mins) else False
         print(generate_ts(-1*accepted_lag_mins))
