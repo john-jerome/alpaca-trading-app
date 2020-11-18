@@ -8,7 +8,7 @@ import os
 
 sys.path.insert(0,'modules')
 
-from helpers import unix_to_ts, is_market_open
+from helpers import unix_to_ts, is_market_open, generate_ts
 from database import Database
 
 config = configparser.ConfigParser()
@@ -67,7 +67,8 @@ class Receiver:
                 msg['data']['c'],
                 msg['data']['a'],
                 unix_to_ts(msg['data']['s'] / 1000.0),
-                unix_to_ts(msg['data']['e'] / 1000.0)
+                unix_to_ts(msg['data']['e'] / 1000.0),
+                generate_ts
                 )
             Database.insert_one_row(self.db_conn, row, table_name = 'alpaca.prices_bars')
             
@@ -89,4 +90,7 @@ class Receiver:
                 on_error= lambda ws,error: self.on_error(ws, error),
                 )
             self.ws.run_forever()
+    
+    def __order_updates(self, stop_event):
+        pass
 

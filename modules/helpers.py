@@ -68,3 +68,11 @@ def next_market_close():
 
     return next_close
 
+# def check_data_freshness(df, period):
+
+#     start = 
+#     end = 
+
+#     return status
+
+print(generate_ts())
