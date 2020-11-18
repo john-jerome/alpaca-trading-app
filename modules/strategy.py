@@ -5,6 +5,7 @@ import pandas as pd
 
 sys.path.insert(0,'modules')
 from database import Database
+from helpers import is_data_fresh
 
 class Strategy:
     def __init__(self, db_conn, buy_strategy, sell_strategy, **kwargs):
@@ -33,8 +34,9 @@ class Strategy:
         """
         df = Database.get_last_n_prices(self.db_conn, symbol, window_len)
         # if not enough data for moving average calculation or wrong timestamps
-        if len(df.index) < window_len:
-            raise ValueError("Not suitable data for moving average calculation")
+        if len(df.index) < window_len or not is_data_fresh(df, window_len):
+            print('Should see only if error')
+            raise ValueError('Not suitable data for moving average calculation')
         mean = df['close_price'].mean()
 
         # check if symbol appears for the first time
@@ -74,13 +76,13 @@ class Strategy:
                 'stop_price': (1-stop_threshold)*means[-1], 
                 'order_class':'bracket'}
                 self.symbols_to_trade.append(order)
-            
+                # reset means for this symbol
+                self.means.pop(symbol, None)
         return None
 
     def buy_strategy_moving_average(self, window_len, lookback_len, buy_threshold, profit_margin, stop_threshold):
         # do calculations for all symbol
         for symbol in Database.get_all_symbols(self.db_conn):
-            # ignore symbol if there is already open buy
             try:
                 means = self.calculate_means(window_len, lookback_len + 1, symbol)
             # ignore symbol if means are not calculated yet
@@ -100,7 +102,8 @@ class Strategy:
                 'stop_price': (1-stop_threshold)*means[-1], 
                 'order_class': 'bracket'}
                 self.symbols_to_trade.append(order)
-            
+                # reset means for this symbol
+                self.means.pop(symbol, None)
         return None
 
     def get_symbols_to_trade(self):
