@@ -76,8 +76,6 @@ def is_data_valid(df, window_len):
     else:
         accepted_lag = window_len + 3
         end = df['window_end'].iloc[-1]
-        print(end)
         status = True if end > generate_ts(-1*accepted_lag) else False
-        print(generate_ts(-1*accepted_lag))
     return status
 

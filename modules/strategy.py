@@ -35,7 +35,6 @@ class Strategy:
         df = Database.get_last_n_prices(self.db_conn, symbol, window_len)
         # if not enough data for moving average calculation or wrong timestamps
         if not is_data_valid(df, window_len):
-            print('Should see only if error')
             raise ValueError('Not suitable data for moving average calculation')
         mean = df['close_price'].mean()
 
