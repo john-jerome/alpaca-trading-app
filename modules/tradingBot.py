@@ -30,7 +30,8 @@ class TradingBot():
                 if trade['order_class'] == 'bracket':
                     buy_amount = config.getint('algo_params', 'buy_amount')
                     n_shares = math.floor(buy_amount/trade['limit_price'])
-                    print("Creating a bracket order...")
+                    print("Creating a bracket order for {}...".format(trade['symbol']))
+                    print(trade)
                     self.account.create_bracket_order(
                         trade['symbol'], n_shares, trade['side'], 
                         trade['type'], trade['time_in_force'], 
