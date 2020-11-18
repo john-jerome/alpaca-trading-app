@@ -23,7 +23,6 @@ class Strategy:
         """Calculates moving averages for the symbol
         The function shall be called periodically from the same place 
         Args:
-            db_conn (sqlite3.connect): database connection object
             window_length (int): moving average window length
             buffer_size (int): size of buffer storing moving averages
             symbol (string): symbol of a financial instrument
