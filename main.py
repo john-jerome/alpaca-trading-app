@@ -21,7 +21,7 @@ move_av = Strategy(db_conn, 'moving_average', 'limit', window_len = 5, lookback_
 account = Portfolio('ua')
 
 dataReceiver = Receiver("wss://data.alpaca.markets/stream", db)
-traderBot = TradingBot(move_av, account, period = 30)
+traderBot = TradingBot(move_av, account, period = 60)
 
 dataReceiver.start()
 traderBot.start()
