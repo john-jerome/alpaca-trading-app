@@ -74,14 +74,13 @@ class Receiver:
     def on_close(self, ws):
         print("closed connection")
 
-    def on_error(self, error):
+    def on_error(self, ws, error):
         print(error)
-        return error
 
     def __receive_data(self, stop_event):
 
         self.db_conn = Database.create_connection(self.database_uri)
-        while not stop_event.is_set():
+        while is_market_open() and (not stop_event.is_set()):
             self.ws = websocket.WebSocketApp(
                 self.websocket_url, 
                 on_open=lambda ws: self.on_open(ws), 
