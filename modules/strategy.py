@@ -5,7 +5,7 @@ import pandas as pd
 
 sys.path.insert(0,'modules')
 from database import Database
-from helpers import is_data_fresh
+from helpers import is_data_valid
 
 class Strategy:
     def __init__(self, db_conn, buy_strategy, sell_strategy, **kwargs):
@@ -34,7 +34,7 @@ class Strategy:
         """
         df = Database.get_last_n_prices(self.db_conn, symbol, window_len)
         # if not enough data for moving average calculation or wrong timestamps
-        if len(df.index) < window_len or not is_data_fresh(df, window_len):
+        if not is_data_valid(df, window_len):
             print('Should see only if error')
             raise ValueError('Not suitable data for moving average calculation')
         mean = df['close_price'].mean()
