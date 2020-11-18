@@ -68,11 +68,9 @@ def next_market_close():
 
     return next_close
 
-# def check_data_freshness(df, period):
+def is_data_fresh(df, accepted_lag_mins):
 
-#     start = 
-#     end = 
+    end = df['window_end'][-1]
 
-#     return status
+    return True if end > generate_ts(-1*accepted_lag_mins) else False
 
-print(generate_ts())
