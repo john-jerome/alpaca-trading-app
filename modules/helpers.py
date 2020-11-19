@@ -1,6 +1,7 @@
 import requests
 import os
 import pandas as pd
+from pytz import timezone
 from datetime import datetime, timedelta
 
 def generate_ts(delay_minutes=0):
@@ -39,7 +40,7 @@ def is_market_open():
 
     return status
 
-def next_market_open():
+def time_to_market_open():
 
     url = "https://paper-api.alpaca.markets/v2/clock"
 
@@ -50,11 +51,12 @@ def next_market_open():
     
     response = requests.request('GET', url, headers=headers)
 
-    next_open = response.json()['next_open']
+    next_open = datetime.strptime(response.json()['next_open'], '%Y-%m-%d %H:%M:%S.%f')
+    current_ts = timezone('Europe/Berlin').localize(generate_ts())
+    
+    return next_open - current_ts
 
-    return datetime.strptime(next_open, '%Y-%m-%d %H:%M:%S.%f')
-
-def next_market_close():
+def time_to_market_close():
 
     url = "https://paper-api.alpaca.markets/v2/clock"
 
@@ -65,9 +67,11 @@ def next_market_close():
     
     response = requests.request('GET', url, headers=headers)
 
-    next_close = response.json()['next_close']
 
-    return datetime.strptime(next_close, '%Y-%m-%d %H:%M:%S.%f')
+    next_close = datetime.strptime(response.json()['next_close'], '%Y-%m-%d %H:%M:%S.%f')
+    current_ts = timezone('Europe/Berlin').localize(generate_ts())
+    
+    return next_close - current_ts
 
 def is_data_valid(df, window_len):
 
