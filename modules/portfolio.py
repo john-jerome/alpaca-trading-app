@@ -156,3 +156,20 @@ class Portfolio:
         symbols = [order['symbol'] for order in orders if order['side'] == side]
         
         return list(set(symbols))
+
+    def cancel_all_orders(self):
+
+        url = "https://paper-api.alpaca.markets/v2/orders"
+
+        response = requests.request("DELETE", url, headers=self.generate_auth_headers())
+        
+        print(response)
+        
+
+    def liquidate_all_positions(self):
+
+        url = "https://paper-api.alpaca.markets/v2/positions"
+
+        response = requests.request("DELETE", url, headers=self.generate_auth_headers())
+
+        print(response)
