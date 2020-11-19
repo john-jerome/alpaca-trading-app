@@ -52,7 +52,7 @@ def next_market_open():
 
     next_open = response.json()['next_open']
 
-    return next_open
+    return datetime.strptime(next_open, '%Y-%m-%d %H:%M:%S.%f')
 
 def next_market_close():
 
@@ -67,7 +67,7 @@ def next_market_close():
 
     next_close = response.json()['next_close']
 
-    return next_close
+    return datetime.strptime(next_close, '%Y-%m-%d %H:%M:%S.%f')
 
 def is_data_valid(df, window_len):
 
@@ -78,4 +78,3 @@ def is_data_valid(df, window_len):
         end = df['window_end'].iloc[-1]
         status = True if end > generate_ts(-1*accepted_lag) else False
     return status
-
