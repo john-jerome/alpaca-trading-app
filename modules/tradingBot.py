@@ -9,7 +9,7 @@ sys.path.insert(0,'modules')
 from strategy import Strategy
 from database import Database
 from portfolio import Portfolio
-from helpers import generate_ts, next_market_close
+from helpers import generate_ts, next_market_close, is_market_open
 
 config = configparser.ConfigParser()
 config.read('config.ini')
