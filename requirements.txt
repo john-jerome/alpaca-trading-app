@@ -3,3 +3,4 @@ pandas == 1.1.3
 requests == 2.23.0
 websocket-client == 0.57.0
 psycopg2-binary
+pytz

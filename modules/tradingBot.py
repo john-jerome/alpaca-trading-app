@@ -9,7 +9,7 @@ sys.path.insert(0,'modules')
 from strategy import Strategy
 from database import Database
 from portfolio import Portfolio
-from helpers import generate_ts, next_market_close, is_market_open
+from helpers import is_market_open, time_to_market_close, time_to_market_open
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -25,7 +25,7 @@ class TradingBot():
         print('Started', self.account.account_id, 'trader bot')
         while is_market_open() and (not self.__stop_trading.is_set()):
             # if less than 30 minutes to market close then close all positions and stop the program
-            if (next_market_close() - generate_ts()).total_seconds() / 60.0 < 30:
+            if time_to_market_close().total_seconds() / 60.0 < 30:
                 self.account.liquidate_all_positions()
                 self.stop()
             for trade in self.strategy.get_symbols_to_trade():
