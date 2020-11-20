@@ -5,11 +5,14 @@ import json
 import sys
 import os
 
+#from database import Database
+
 class TradeUpdates:
 
-    def __init__(self, websocket_url):
+    def __init__(self, websocket_url, account_id):
         self.__stop_trade_updates = threading.Event()
         self.websocket_url = websocket_url
+        self.account_id = account_id
 
     def start(self):
         trade_updates_thread = threading.Thread(target = self.__trade_updates, args=(self.__stop_trade_updates,))
@@ -20,13 +23,15 @@ class TradeUpdates:
     
     def on_open(self, ws):
 
-        auth_payload = {
-            "action": "authenticate",
-            "data": {
-                "key_id": "PKA9J5UADS5Y7UYG89NB",
-                "secret_key": "8om4fiJETeVvqa4m623KANaQL6wOl453djHpNZxf"
+        if self.account_id == 'ua':
+
+            auth_payload = {
+                "action": "authenticate",
+                "data": {
+                    "key_id": "PKA9J5UADS5Y7UYG89NB",
+                    "secret_key": "8om4fiJETeVvqa4m623KANaQL6wOl453djHpNZxf"
+                    }
                 }
-            }
 
         ws.send(json.dumps(auth_payload))
 
@@ -42,6 +47,7 @@ class TradeUpdates:
     def on_message(self, ws, message):
 
         msg = json.loads(message)
+        #Database.insert_one_row(self.db_conn, row, table_name = 'alpaca.prices_bars')
         print(msg)
             
     def on_close(self, ws):
@@ -63,5 +69,5 @@ class TradeUpdates:
             self.ws.run_forever()
     
 
-tradeReceiver = TradeUpdates("https://paper-api.alpaca.markets/stream")
+tradeReceiver = TradeUpdates("wss://paper-api.alpaca.markets/stream", 'ua')
 tradeReceiver.start()
