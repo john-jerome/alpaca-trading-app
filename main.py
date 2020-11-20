@@ -10,7 +10,7 @@ from strategy import Strategy
 from tradingBot import TradingBot
 from portfolio import Portfolio
 from database import Database
-from receiver import Receiver
+from priceReceiver import Receiver
 
 config = configparser.ConfigParser()
 config.read('config.ini')
