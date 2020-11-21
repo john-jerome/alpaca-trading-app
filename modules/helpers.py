@@ -5,27 +5,39 @@ from pytz import timezone
 from datetime import datetime, timedelta
 
 def generate_ts(delay_minutes=0):
-    """Generate current UTC timestamp."""
+    """Generates current timestamp with an optional offset.
 
+    Args:
+        delay_minutes (int, optional): timestamp offset, in minutes. Defaults to 0.
+
+    Returns:
+        (datetime): Current timestamp.
+    """
     current_ts = datetime.now() + timedelta(minutes=delay_minutes)
 
     return current_ts
 
 def unix_to_ts(unix_date):
-    """Conver unix date to timestamp."""
+    """[summary]
+
+    Args:
+        unix_date ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
 
     ts = datetime.fromtimestamp(unix_date).strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
 
     return ts
 
-def ts_to_unix(ts):
-    """Convert timestamp to unix date."""
-
-    unix_date = datetime.timestamp(ts)
-
-    return unix_date
 
 def is_market_open():
+    """Check if market is currently open.
+
+    Returns:
+        (boolean): True if open, False otherwise.
+    """
     
     url = "https://paper-api.alpaca.markets/v2/clock"
 
@@ -41,6 +53,11 @@ def is_market_open():
     return status
 
 def time_to_market_open():
+    """Calculates time in minutes till next market open.
+
+    Returns:
+        (int): Minutes till the next market open.
+    """
 
     url = "https://paper-api.alpaca.markets/v2/clock"
 
@@ -53,8 +70,10 @@ def time_to_market_open():
 
     next_open = datetime.strptime(response.json()['next_open'], "%Y-%m-%dT%H:%M:%S%z")
     current_ts = timezone('Europe/Berlin').localize(generate_ts())
+    diff = next_open - current_ts
+    diff_minutes = int(diff.total_seconds() / 60.0)
     
-    return next_open - current_ts
+    return diff_minutes
 
 def time_to_market_close():
 
@@ -83,3 +102,4 @@ def is_data_valid(df, window_len):
         status = True if end > generate_ts(-1*accepted_lag) else False
     return status
 
+print(type(generate_ts()))
