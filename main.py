@@ -11,22 +11,26 @@ from tradingBot import TradingBot
 from portfolio import Portfolio
 from database import Database
 from priceReceiver import Receiver
+from tradeUpdates import TradeUpdates
 
 config = configparser.ConfigParser()
 config.read('config.ini')
 
+account = 'ua'
 db = os.environ['DATABASE_URL']
 db_conn = Database.create_connection(db)
 move_av = Strategy(db_conn, 'moving_average', 'limit', window_len = 5, lookback_len = 7, buy_threshold = 0.01, profit_margin = 0.005, stop_threshold = 0.005)
-account = Portfolio('ua')
+account = Portfolio(account)
 
+tradeReceiver = TradeUpdates("wss://paper-api.alpaca.markets/stream", account, db)
 dataReceiver = Receiver("wss://data.alpaca.markets/stream", db)
 traderBot = TradingBot(move_av, account, period = 60)
 
+tradeReceiver.start()
 dataReceiver.start()
 traderBot.start()
 
-number_of_threads = 3
+number_of_threads = 4
 program_state = 'Init'
 # watchdog for the program
 while True:
