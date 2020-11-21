@@ -19,6 +19,12 @@ class Strategy:
         self.stop_threshold = kwargs.get('stop_threshold')
         self.profit_margin = kwargs.get('profit_margin')
         self.buy_threshold = kwargs.get('buy_threshold')
+        # check whether all arguments are provided
+        if self.buy_strategy == 'moving_average' and self.sell_strategy == 'limit':
+            if self.window_len == None or self.lookback_len == None or self.stop_threshold == None or self.profit_margin == None or self.buy_threshold == None:
+                raise ValueError('Some parameters are not specified for the selected strategy')
+        else:
+            raise ValueError('Specified strategy does not exist')
     
     def calculate_means(self, window_len, buffer_size, symbol):
         """Calculates moving averages for the symbol
