@@ -25,7 +25,7 @@ class TradingBot():
         print('Started', self.account.account_id, 'trader bot')
         while is_market_open() and (not self.__stop_trading.is_set()):
             # if less than 30 minutes to market close then close all positions and stop the program
-            if time_to_market_close().total_seconds() / 60.0 < 30:
+            if time_to_market_close() < 30:
                 self.account.cancel_all_orders()
                 self.account.liquidate_all_positions()
                 self.stop()
