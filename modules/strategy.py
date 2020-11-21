@@ -84,7 +84,7 @@ class Strategy:
         for symbol in Database.get_all_symbols(self.db_conn):
             try:
                 means = self.calculate_means(window_len, lookback_len + 1, symbol)
-            # ignore symbol if means are not calculated yet
+            # calculate_means() raises ValueError if it cannot calculate means -> ignore symbol
             except ValueError:
                 continue
             # wait until enough moving average values are calculated
@@ -111,5 +111,7 @@ class Strategy:
             self.buy_strategy_first_momentum(self.window_len, self.lookback_len, self.profit_margin, self.stop_threshold)
         elif self.buy_strategy == 'moving_average' and self.sell_strategy == 'limit':
             self.buy_strategy_moving_average(self.window_len, self.lookback_len, self.buy_threshold, self.profit_margin, self.stop_threshold)
+        else:
+            print('Specified trading strategy does not exist')
         return self.symbols_to_trade
 
