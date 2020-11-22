@@ -5,13 +5,14 @@ import json
 import sys
 import os
 
-#from database import Database
+from database import Database
 
 class TradeUpdates:
 
-    def __init__(self, websocket_url, account_id):
+    def __init__(self, websocket_url, database_uri, account_id):
         self.__stop_trade_updates = threading.Event()
         self.websocket_url = websocket_url
+        self.database_uri = database_uri
         self.account_id = account_id
 
     def start(self):
@@ -68,6 +69,3 @@ class TradeUpdates:
                 )
             self.ws.run_forever()
     
-
-tradeReceiver = TradeUpdates("wss://paper-api.alpaca.markets/stream", 'ua')
-tradeReceiver.start()
