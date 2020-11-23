@@ -68,4 +68,5 @@ class TradeUpdates:
                 on_error= lambda ws,error: self.on_error(ws, error),
                 )
             self.ws.run_forever()
+        print('Stop receiving data from', self.websocket_url)
     
