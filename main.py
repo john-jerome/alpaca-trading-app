@@ -52,6 +52,7 @@ while True:
   if program_state == 'Normal' and threading.active_count() != number_of_threads:
     print('An error occured. Program is terminating...')
     dataReceiver.stop()
+    tradeReceiver.stop()
     traderBot.stop()
     program_state = 'Stopping'
   if program_state == 'Stopping' and threading.active_count() == 1:
