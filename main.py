@@ -55,8 +55,8 @@ while True:
     traderBot.stop()
     program_state = 'Stopping'
   if program_state == 'Stopping' and threading.active_count() == 1:
+    program_state = 'Shutdown'
+    Database.close_connection(db_conn)
+    print("Program terminated")
+    send_state("stopped")
     break
-
-Database.close_connection(db_conn)
-print('Program terminated')
-send_state('stopped')
