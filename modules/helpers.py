@@ -80,17 +80,18 @@ def time_to_market_close():
     url = "https://paper-api.alpaca.markets/v2/clock"
 
     headers = {
-                'APCA-API-KEY-ID': os.environ['APCA_API_KEY_ID'],
-                'APCA-API-SECRET-KEY': os.environ['APCA_API_SECRET_KEY']
+                'APCA-API-KEY-ID': "PKA9J5UADS5Y7UYG89NB",
+                'APCA-API-SECRET-KEY': "8om4fiJETeVvqa4m623KANaQL6wOl453djHpNZxf"
             }
     
     response = requests.request('GET', url, headers=headers)
 
-
     next_close = datetime.strptime(response.json()['next_close'], "%Y-%m-%dT%H:%M:%S%z")
     current_ts = timezone('Europe/Berlin').localize(generate_ts())
+    diff = next_close - current_ts
+    diff_minutes = int(diff.total_seconds() / 60.0)
     
-    return next_close - current_ts
+    return diff_minutes
 
 def is_data_valid(df, window_len):
 
@@ -101,5 +102,3 @@ def is_data_valid(df, window_len):
         end = df['window_end'].iloc[-1]
         status = True if end > generate_ts(-1*accepted_lag) else False
     return status
-
-print(type(generate_ts()))
