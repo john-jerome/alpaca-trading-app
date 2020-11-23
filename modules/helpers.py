@@ -80,8 +80,8 @@ def time_to_market_close():
     url = "https://paper-api.alpaca.markets/v2/clock"
 
     headers = {
-                'APCA-API-KEY-ID': "PKA9J5UADS5Y7UYG89NB",
-                'APCA-API-SECRET-KEY': "8om4fiJETeVvqa4m623KANaQL6wOl453djHpNZxf"
+                'APCA-API-KEY-ID': os.environ['APCA_API_KEY_ID'],
+                'APCA-API-SECRET-KEY': os.environ['APCA_API_SECRET_KEY']
             }
     
     response = requests.request('GET', url, headers=headers)
