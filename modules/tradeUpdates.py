@@ -51,21 +51,21 @@ class TradeUpdates:
 
     def start(self):
         print('Creating configuration for websocket', self.websocket_url)
-        self.ws = websocket.WebSocketApp(
+        ws = websocket.WebSocketApp(
                 self.websocket_url, 
                 on_open=lambda ws: self.on_open(ws), 
                 on_message=lambda ws,message: self.on_message(ws, message), 
                 on_close=lambda ws: self.on_close(ws),
                 on_error= lambda ws,error: self.on_error(ws, error),
                 )
-        self.ws.keep_running = True
+        ws.keep_running = True
         print('Starting a thread for websocket', self.websocket_url)
-        trade_updates_thread = threading.Thread(target = self.ws.run_forever())
+        trade_updates_thread = threading.Thread(target = ws.run_forever())
         trade_updates_thread.start()
         print('Start receiving data from', self.websocket_url)
 
     def stop(self):
-        self.ws.keep_running = False
+        ws.keep_running = False
         print('Stop receiving data from', self.websocket_url)
             
         

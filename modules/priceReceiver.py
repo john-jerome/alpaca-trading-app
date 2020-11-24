@@ -78,13 +78,13 @@ class Receiver:
 
         self.db_conn = Database.create_connection(self.database_uri)
         while is_market_open() and (not stop_event.is_set()):
-            self.ws = websocket.WebSocketApp(
+            ws = websocket.WebSocketApp(
                 self.websocket_url, 
                 on_open=lambda ws: self.on_open(ws), 
                 on_message=lambda ws,message: self.on_message(ws, message), 
                 on_close=lambda ws: self.on_close(ws),
                 on_error= lambda ws,error: self.on_error(ws, error),
                 )
-            self.ws.run_forever()
+            ws.run_forever()
         print('Stop receiving data from', self.websocket_url)
 
