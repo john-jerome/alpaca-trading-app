@@ -61,7 +61,7 @@ class TradeUpdates:
                 )
         self.ws.keep_running = True
         print('Starting a thread for websocket', self.websocket_url)
-        trade_updates_thread = threading.Thread(target = self.ws.run_forever())
+        trade_updates_thread = threading.Thread(target = self.ws.run_forever)
         trade_updates_thread.start()
         print('Start receiving data from', self.websocket_url)
 
