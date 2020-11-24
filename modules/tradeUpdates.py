@@ -58,7 +58,7 @@ class TradeUpdates:
         print(error)
 
     def __trade_updates(self, stop_event):
-
+        print('Started receiving data from', self.websocket_url)
         while not stop_event.is_set():
             self.ws = websocket.WebSocketApp(
                 self.websocket_url, 
