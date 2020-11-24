@@ -36,11 +36,11 @@ dataReceiver = Receiver(
 
 traderBot = TradingBot(move_av, account, period = 60)
 
-#tradeReceiver.start()
+tradeReceiver.start()
 dataReceiver.start()
 traderBot.start()
 
-number_of_threads = 3
+number_of_threads = 4
 program_state = 'Init'
 print('Running number of threads', threading.active_count())
 # watchdog for the program
