@@ -16,11 +16,19 @@ class TradeUpdates:
         self.account_id = account_id
 
     def start(self):
-        trade_updates_thread = threading.Thread(target = self.__trade_updates, args=(self.__stop_trade_updates,))
+        self.ws = websocket.WebSocketApp(
+                self.websocket_url, 
+                on_open=lambda ws: self.on_open(ws), 
+                on_message=lambda ws,message: self.on_message(ws, message), 
+                on_close=lambda ws: self.on_close(ws),
+                on_error= lambda ws,error: self.on_error(ws, error),
+                )
+        self.ws.keep_running = True
+        trade_updates_thread = threading.Thread(target = self.ws.run_forever())
         trade_updates_thread.start()
 
     def stop(self):
-        self.__stop_trade_updates.set()
+        self.ws.keep_running = False
     
     def on_open(self, ws):
 
@@ -56,17 +64,6 @@ class TradeUpdates:
 
     def on_error(self, ws, error):
         print(error)
-
-    def __trade_updates(self, stop_event):
-        print('Started receiving data from', self.websocket_url)
-        while not stop_event.is_set():
-            self.ws = websocket.WebSocketApp(
-                self.websocket_url, 
-                on_open=lambda ws: self.on_open(ws), 
-                on_message=lambda ws,message: self.on_message(ws, message), 
-                on_close=lambda ws: self.on_close(ws),
-                on_error= lambda ws,error: self.on_error(ws, error),
-                )
-            self.ws.run_forever()
-        print('Stop receiving data from', self.websocket_url)
+            
+        
     
