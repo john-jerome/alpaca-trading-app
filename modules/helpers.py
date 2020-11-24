@@ -67,8 +67,8 @@ def time_to_market_open():
             }
     
     response = requests.request('GET', url, headers=headers)
-
-    next_open = datetime.strptime(response.json()['next_open'], "%Y-%m-%dT%H:%M:%S%z")
+    next_open_str = str(response.json()['next_open'])
+    next_open = datetime.strptime(next_open_str[:-3] + next_open_str[-2:], "%Y-%m-%dT%H:%M:%S%z")
     current_ts = timezone('Europe/Berlin').localize(generate_ts())
     diff = next_open - current_ts
     diff_minutes = int(diff.total_seconds() / 60.0)
@@ -85,8 +85,8 @@ def time_to_market_close():
             }
     
     response = requests.request('GET', url, headers=headers)
-
-    next_close = datetime.strptime(response.json()['next_close'], "%Y-%m-%dT%H:%M:%S%z")
+    next_close_str = str(response.json()['next_close'])
+    next_close = datetime.strptime(next_close_str[:-3] + next_close_str[-2:], "%Y-%m-%dT%H:%M:%S%z")
     current_ts = timezone('Europe/Berlin').localize(generate_ts())
     diff = next_close - current_ts
     diff_minutes = int(diff.total_seconds() / 60.0)
@@ -102,3 +102,4 @@ def is_data_valid(df, window_len):
         end = df['window_end'].iloc[-1]
         status = True if end > generate_ts(-1*accepted_lag) else False
     return status
+
