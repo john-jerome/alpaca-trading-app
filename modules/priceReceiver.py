@@ -13,16 +13,9 @@ from database import Database
 class Receiver:
 
     def __init__(self, websocket_url, database_uri):
-        self.__stop_receiving_data = threading.Event()
         self.websocket_url = websocket_url
         self.database_uri = database_uri
-
-    def start(self):
-        receive_data_thread = threading.Thread(target = self.__receive_data, args=(self.__stop_receiving_data,))
-        receive_data_thread.start()
-
-    def stop(self):
-        self.__stop_receiving_data.set()
+        self.ws = None
     
     def on_open(self, ws):
 
@@ -74,17 +67,23 @@ class Receiver:
     def on_error(self, ws, error):
         print(error)
 
-    def __receive_data(self, stop_event):
-
+    def start(self):
         self.db_conn = Database.create_connection(self.database_uri)
-        while is_market_open() and (not stop_event.is_set()):
-            ws = websocket.WebSocketApp(
+        self.ws = websocket.WebSocketApp(
                 self.websocket_url, 
                 on_open=lambda ws: self.on_open(ws), 
                 on_message=lambda ws,message: self.on_message(ws, message), 
                 on_close=lambda ws: self.on_close(ws),
                 on_error= lambda ws,error: self.on_error(ws, error),
                 )
-            ws.run_forever()
+        if is_market_open():
+            self.ws.keep_running = True
+        else:
+            self.ws.keep_running = False
+        receive_data_thread = threading.Thread(target = self.ws.run_forever)
+        receive_data_thread.start()
+
+    def stop(self):
+        self.ws.keep_running = False
         print('Stop receiving data from', self.websocket_url)
 
