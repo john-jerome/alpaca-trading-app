@@ -13,23 +13,6 @@ class TradeUpdates:
         self.websocket_url = websocket_url
         self.database_uri = database_uri
         self.account_id = account_id
-
-    def start(self):
-        self.ws = websocket.WebSocketApp(
-                self.websocket_url, 
-                on_open=lambda ws: self.on_open(ws), 
-                on_message=lambda ws,message: self.on_message(ws, message), 
-                on_close=lambda ws: self.on_close(ws),
-                on_error= lambda ws,error: self.on_error(ws, error),
-                )
-        self.ws.keep_running = True
-        trade_updates_thread = threading.Thread(target = self.ws.run_forever())
-        trade_updates_thread.start()
-        print('Start receiving data from', self.websocket_url)
-
-    def stop(self):
-        self.ws.keep_running = False
-        print('Stop receiving data from', self.websocket_url)
     
     def on_open(self, ws):
 
@@ -65,6 +48,24 @@ class TradeUpdates:
 
     def on_error(self, ws, error):
         print(error)
+
+    def start(self):
+        print('Creating configuration for websocket', self.websocket_url)
+        self.ws = websocket.WebSocketApp(
+                self.websocket_url, 
+                on_open=lambda ws: self.on_open(ws), 
+                on_message=lambda ws,message: self.on_message(ws, message), 
+                on_close=lambda ws: self.on_close(ws),
+                on_error= lambda ws,error: self.on_error(ws, error),
+                )
+        self.ws.keep_running = True
+        trade_updates_thread = threading.Thread(target = self.ws.run_forever())
+        trade_updates_thread.start()
+        print('Start receiving data from', self.websocket_url)
+
+    def stop(self):
+        self.ws.keep_running = False
+        print('Stop receiving data from', self.websocket_url)
             
         
     
