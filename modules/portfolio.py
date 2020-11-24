@@ -163,7 +163,7 @@ class Portfolio:
 
         response = requests.request("DELETE", url, headers=self.generate_auth_headers())
         
-        print(response)
+        print(response.status_code, response.reason)
         
 
     def liquidate_all_positions(self):
@@ -172,4 +172,4 @@ class Portfolio:
 
         response = requests.request("DELETE", url, headers=self.generate_auth_headers())
 
-        print(response)
+        print(response.status_code, response.reason)
