@@ -26,7 +26,8 @@ class TradingBot():
         while is_market_open() and (not self.__stop_trading.is_set()):
             # if less than 30 minutes to market close then close all positions and stop the program
             if time_to_market_close() < 30:
-                print('Market will close soon. Sell all positions and close all positions before market close')
+                print('Market will close soon. Sell all positions before market close.')
+                # check if there is any available positions before cancelling
                 self.account.cancel_all_orders()
                 self.account.liquidate_all_positions()
                 self.stop()
