@@ -10,7 +10,6 @@ from database import Database
 class TradeUpdates:
 
     def __init__(self, websocket_url, database_uri, account_id):
-        self.__stop_trade_updates = threading.Event()
         self.websocket_url = websocket_url
         self.database_uri = database_uri
         self.account_id = account_id
@@ -26,9 +25,11 @@ class TradeUpdates:
         self.ws.keep_running = True
         trade_updates_thread = threading.Thread(target = self.ws.run_forever())
         trade_updates_thread.start()
+        print('Start receiving data from', self.websocket_url)
 
     def stop(self):
         self.ws.keep_running = False
+        print('Stop receiving data from', self.websocket_url)
     
     def on_open(self, ws):
 

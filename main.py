@@ -42,6 +42,7 @@ traderBot.start()
 
 number_of_threads = 4
 program_state = 'Init'
+print('Running number of threads', threading.active_count())
 # watchdog for the program
 while True:
   if program_state == 'Init' and threading.active_count() == number_of_threads:
