@@ -4,8 +4,12 @@ import websocket
 import json
 import sys
 import os
+import configparser
 
 from database import Database
+
+config = configparser.ConfigParser()
+config.read('config.ini') 
 
 class TradeUpdates:
 
@@ -22,8 +26,8 @@ class TradeUpdates:
             auth_payload = {
                 "action": "authenticate",
                 "data": {
-                    "key_id": "PKA9J5UADS5Y7UYG89NB",
-                    "secret_key": "8om4fiJETeVvqa4m623KANaQL6wOl453djHpNZxf"
+                    "key_id": config['alpaca_secrets']['key_id'],
+                    "secret_key": config['alpaca_secrets']['secret_key']
                     }
                 }
 
