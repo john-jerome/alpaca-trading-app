@@ -3,3 +3,4 @@ __pycache__/
 test*.py
 data_import
 *.sql
+config.ini
