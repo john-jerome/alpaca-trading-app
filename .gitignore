@@ -4,3 +4,4 @@ test*.py
 data_import
 *.sql
 config.ini
+tradeUpdates.py
